@@ -1,0 +1,73 @@
+VERSION=2025.9.1 && docker buildx build -f Dockerfile --platform linux/amd64 -t prabha303/mgthub:$VERSION . && docker push prabha303/mgthub:$VERSION
+
+
+//VM
+
+ssh -i ~/Downloads/mgt/ssh/kkt-key.pem ubuntu@3.88.53.87
+
+kubectl -n transport set image deployment/transport-hub server=prabha303/mgthub:2025.8.1
+
+
+Sep 24 2025
+=============
+Backend
+kubectl -n transport get po
+UI
+kubectl -n  gui get po
+
+
+
+
+
+LR
+
+1. LR Prerequisite   
+    Add - Drvier name, Mobile-number, Vehicle-number Vehicle-size invoice-value
+
+Add above all into table
+ Get API, Create, List, Update
+
+
+
+
+
+Sep 22 run the below script
+==============================================
+
+ALTER TABLE trip_sheet_header
+ADD COLUMN vehicle_size_id INT UNSIGNED,
+ADD CONSTRAINT fky_vehicle_size_type FOREIGN KEY (vehicle_size_id) REFERENCES vehicle_size_type(vehicle_size_id);
+
+
+ALTER TABLE trip_sheet_header
+ADD COLUMN vendor_commission NUMERIC(10, 2);
+
+==============================================
+
+25th OCT 2025
+==================
+script to run in producion env
+
+ALTER TABLE trip_sheet_header ADD COLUMN created_by INT UNSIGNED,
+ADD CONSTRAINT fky_created_by_rel FOREIGN KEY (created_by) REFERENCES user_login(id);
+
+ALTER TABLE trip_sheet_header ADD COLUMN managed_by INT UNSIGNED,
+ADD CONSTRAINT fky_managed_by_rel FOREIGN KEY (managed_by) REFERENCES user_login(id);
+
+ALTER TABLE employee
+ADD (
+    employee_performance VARCHAR(50),
+    vehicle_assigned VARCHAR(50),
+    monthly_salary INT,
+    annual_salary INT,
+    annual_bonus INT
+);
+
+ALTER TABLE customers
+ADD COLUMN kkt_responsible_emp_id INT UNSIGNED,
+ADD CONSTRAINT fky_kkt_responsible_emp_org
+FOREIGN KEY (kkt_responsible_emp_id) REFERENCES employee(emp_id);
+
+===================
+
+

@@ -1,0 +1,59 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: transport-hub
+  spec:
+    selector:
+      matchLabels:
+        app: transport-hub
+    template:
+      metadata:
+        labels:
+          app: transport-hub
+      spec:
+        serviceAccountName: default
+        volumes:
+        - name: t-hub-documents
+          hostPath:
+            path: /home/ubuntu/t_hub_document
+            type: Directory
+        containers:
+          - name: server
+            image: prabha303/mgthub:2025.6.32
+            ports:
+              - containerPort: 9005
+            volumeMounts:
+            - name: t-hub-documents
+              mountPath: /home/ubuntu/t_hub_document
+            env:
+              - name: DB_CONNECTION_CONN
+                value: "root:3nRrF3rn5f@tcp(my-sql-mysql.mysql.svc.cluster.local:3306)/transport_hub"
+              - name: PORT
+                value: "9005"
+              - name: EMPLOYEE_IMAGE_DIRECTORY
+                value: "/t_hub_document/employee"
+              - name: IMAGE_DIRECTORY
+                value: "/t_hub_document"
+              - name: BASE_DIRECTORY
+                value: "/home/ubuntu"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 200Mi
+              limits:
+                cpu: 900m
+                memory: 1200Mi
+---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: transport-hub
+  spec:
+    type: ClusterIP
+    selector:
+      app: transport-hub
+    ports:
+      - name: http
+        port: 9005
+        targetPort: 9005
+---

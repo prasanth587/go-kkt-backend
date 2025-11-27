@@ -1,0 +1,13 @@
+
+chmod -R 777 /mnt/data/mysql-kkt/
+kubectl -n mysql-kkt apply -f pv.yaml
+kubectl -n mysql-kkt apply -f pvc.yaml -n mysql
+helm upgrade --install my-sql-kkt --namespace mysql-kkt --create-namespace oci://registry-1.docker.io/bitnamicharts/mysql -f mysql-values.yaml
+
+
+transport_hub
+mysql db root password: 3nRrF3rn5f
+complete values yaml - https://github.com/bitnami/charts/blob/main/bitnami/mysql/values.yaml
+
+transport_hub_kkt
+mysql db root password: ZrAa0Pgoc8

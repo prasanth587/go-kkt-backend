@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+# =====================================================
+# COPY THIS FILE TO build.sh AND UPDATE YOUR SETTINGS
+# cp build.sh.example build.sh
+# =====================================================
+
+# Add Go to PATH
+export PATH=$PATH:/usr/local/go/bin
+
+export APP_NAME="kk-transport"
+export ENV="dev"
+
+# DATABASE CONNECTION - UPDATE WITH YOUR CREDENTIALS
+export DB_CONNECTION_CONN="root:YOUR_PASSWORD_HERE@tcp(localhost:3306)/transport_hub"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+export EMPLOYEE_IMAGE_DIRECTORY="/t_hub_document/employee"
+export BASE_DIRECTORY="${SCRIPT_DIR}/../uploads"
+export IMAGE_DIRECTORY="/t_hub_document"
+
+# Create upload directories if they don't exist
+mkdir -p "${BASE_DIRECTORY}/t_hub_document/employee"
+
+export LOG_LEVEL="Info"
+
+# Build and run
+go install
+if [ $? != 0 ]; then
+  echo "## Build Failed ##"
+  exit
+fi
+
+echo "Doing some cleaning ..."
+go clean
+echo "Done."
+
+# Check if required commands are available
+command -v go >/dev/null 2>&1 || { echo >&2 "Go is required but it's not installed. Aborting."; exit 1; }
+command -v gofmt >/dev/null 2>&1 || { echo >&2 "Gofmt is required but it's not installed. Aborting."; exit 1; }
+
+echo "Running go format ..."
+gofmt -w .
+echo "Done."
+
+echo "Running go build ..."
+go build -race
+if [ $? != 0 ]; then
+  echo "## Build Failed ##"
+  exit
+fi
+echo "Done."
+
+if [ $? == 0 ]; then
+	echo "## Starting service ##"
+    ./go-transport-hub
+fi
+

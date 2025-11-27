@@ -1,0 +1,9 @@
+primary:
+  persistence:
+    existingClaim: "mysql-kkt-pvc"
+  resources:
+    requests:
+      cpu: 50m
+auth:
+  database: "transport_hub_kkt"
+  rootPassword: "ZrAa0Pgoc8"

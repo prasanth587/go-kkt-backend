@@ -1,0 +1,45 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: gui-kkt-hub
+  spec:
+    selector:
+      matchLabels:
+        app: gui-kkt-hub
+    template:
+      metadata:
+        labels:
+          app: gui-kkt-hub
+      spec:
+        serviceAccountName: default
+        containers:
+          - name: gui-kkt-hub
+            image: prabha303/kktgui:2025.3.1
+            ports:
+              - containerPort: 9007
+            env:
+              - name: VITE_API_BASE_URL
+                value: "http://transport-hub.transport.svc.cluster.local:9005"
+              - name: VITE_MODE
+                value: "development"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 50Mi
+              limits:
+                cpu: 400m
+                memory: 500Mi
+---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: gui-kkt-hub
+  spec:
+    type: ClusterIP
+    selector:
+      app: gui-kkt-hub
+    ports:
+      - name: http
+        port: 9007
+        targetPort: 9007
+---

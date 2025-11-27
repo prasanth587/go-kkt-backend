@@ -1,0 +1,45 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: gui-transport-hub
+  spec:
+    selector:
+      matchLabels:
+        app: gui-transport-hub
+    template:
+      metadata:
+        labels:
+          app: gui-transport-hub
+      spec:
+        serviceAccountName: default
+        containers:
+          - name: gui-transport-hub
+            image: prabha303/mgtgui:2025.3.1
+            ports:
+              - containerPort: 9006
+            env:
+              - name: VITE_API_BASE_URL
+                value: "http://54.175.147.136:9005"
+              - name: VITE_MODE
+                value: "development"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 50Mi
+              limits:
+                cpu: 400m
+                memory: 500Mi
+---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: gui-transport-hub
+  spec:
+    type: ClusterIP
+    selector:
+      app: gui-transport-hub
+    ports:
+      - name: http
+        port: 9006
+        targetPort: 9006
+---
