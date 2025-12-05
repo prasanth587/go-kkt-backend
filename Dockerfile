@@ -22,6 +22,9 @@ RUN go build -o main .
 # Start a new stage from scratch
 FROM alpine:latest  
 
+# Install timezone data
+RUN apk add --no-cache tzdata
+
 WORKDIR /root/
 
 # Copy the pre-built binary file from the previous stage
