@@ -1,32 +1,37 @@
-# Use the official Golang image as the base image
+# Start from the official Go image
 FROM golang:1.23-alpine AS builder
+
+# Install git for fetching dependencies
+RUN apk add --no-cache git
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go module files (go.mod and go.sum) to the working directory
+# Copy go mod and sum files
 COPY go.mod go.sum ./
 
-# Download Go modules (dependencies)
+# Download all dependencies
 RUN go mod download
 
-# Copy the application source code to the working directory
+# Copy the source code into the container
 COPY . .
 
-# Build the Go application
-RUN go build -o go-transport-hub .
+# Build the application
+RUN go build -o main .
 
-# Create a new lightweight image for running the application
-FROM golang:1.23-alpine
+# Start a new stage from scratch
+FROM alpine:latest  
 
-# Set the working directory
-WORKDIR /app
+WORKDIR /root/
 
-# Copy the built executable from the builder stage
-COPY --from=builder /app/go-transport-hub .
+# Copy the pre-built binary file from the previous stage
+COPY --from=builder /app/main .
 
-# Expose the port that the application listens on (if applicable)
+# Copy the uploads folder structure if needed (optional, depends on your app)
+# RUN mkdir -p /uploads/t_hub_document/employee
+
+# Expose port 9005 to the outside world
 EXPOSE 9005
 
 # Command to run the executable
-CMD ["./go-transport-hub"]
+CMD ["./main"]
