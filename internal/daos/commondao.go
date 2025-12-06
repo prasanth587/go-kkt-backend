@@ -134,7 +134,7 @@ func (br *PreRequisiteObj) GetCustomers(orgId int64) (*[]dtos.Customers, error) 
 	list := []dtos.Customers{}
 
 	loadingpointQuery := fmt.Sprintf(`SELECT customer_id, customer_name, customer_code 
-	FROM customers WHERE org_id = '%v' AND is_active = '1' AND status = '%v' ORDER BY customer_code ASC;`, orgId, constant.STATUS_APPROVED)
+	FROM customers WHERE org_id = '%v' AND is_active = '1' AND status IN ('%v', '%v') ORDER BY customer_code ASC;`, orgId, constant.STATUS_APPROVED, constant.STATUS_CREATED)
 
 	br.l.Info("loadingpointQuery:\n ", loadingpointQuery)
 

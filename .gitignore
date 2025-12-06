@@ -1,1 +1,22 @@
+# Binaries
 go-transport-hub
+*.exe
+*.dll
+*.so
+
+# Sensitive Environment Files
+.env
+dev.env
+build.sh
+
+# Uploads / User Data
+uploads/
+t_hub_document/
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
