@@ -576,4 +576,3 @@ func (rl *PreRequisiteObj) GetEmployeePre() (*[]dtos.EmployeesPre, error) {
 
 	return &list, nil
 }
-image.png
