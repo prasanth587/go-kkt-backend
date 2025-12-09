@@ -559,20 +559,31 @@ func (vo *VendorObj) UploadVendorImagesV1(vendorCode string, imageFor string,
 		return nil, errors.New("BASE_DIRECTORY & IMAGE_DIRECTORY path not found")
 	}
 
-	imageDirectory := filepath.Join(uploadPath, "vendor", vendorCode)
-	fullPath := filepath.Join(baseDirectory, imageDirectory)
-	vo.l.Infof("vendorCode: %v imageDirectory: %s, fullPath: %s", vendorCode, imageDirectory, fullPath)
-
-	err := os.MkdirAll(fullPath, os.ModePerm) // os.ModePerm sets permissions to 0777
-	if err != nil {
-		vo.l.Error("ERROR: MkdirAll ", fullPath, err)
-		return nil, err
-	}
-
+	// Use original vendorCode for directory path (before adding timestamp)
+	originalVendorCode := vendorCode
+	
+	// Add timestamp to vendorCode for filename if needed (but not for pancard_img and bank_passbook_or_cheque_img)
 	if imageFor != "pancard_img" && imageFor != "bank_passbook_or_cheque_img" {
 		currentMillis := time.Now().In(utils.TimeLoc()).UnixNano() / int64(time.Millisecond)
 		millisStr := strconv.FormatInt(currentMillis, 10)
 		vendorCode = vendorCode + "_" + millisStr
+	}
+
+	// Create directory using original vendorCode (without timestamp)
+	imageDirectory := filepath.Join(uploadPath, "vendor", originalVendorCode)
+	fullPath := filepath.Join(baseDirectory, imageDirectory)
+	vo.l.Infof("vendorCode: %v (original: %v) imageDirectory: %s, fullPath: %s", vendorCode, originalVendorCode, imageDirectory, fullPath)
+
+	err := os.MkdirAll(fullPath, os.ModePerm) // os.ModePerm sets permissions to 0777
+	if err != nil {
+		vo.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
+		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
+	}
+	
+	// Verify directory was created
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		vo.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
+		return nil, fmt.Errorf("directory was not created: %s", fullPath)
 	}
 
 	extension := strings.Split(fileHeader.Filename, ".")
