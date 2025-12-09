@@ -478,7 +478,7 @@ func (ul *VendorObj) UploadVendorImages(vendorId int64, imageFor string, file mu
 		ul.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		ul.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
