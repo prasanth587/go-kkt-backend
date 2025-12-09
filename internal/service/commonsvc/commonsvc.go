@@ -2,6 +2,7 @@ package commonsvc
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -326,10 +327,16 @@ func (br *PreRequisiteObj) GetCustomerCode() string {
 }
 
 func (br *PreRequisiteObj) GetNextCustomerCode() string {
-	fallBackCustomerCode := br.GetCustomerCode()
 	customerId, customerCode, err := br.preRequisiteDao.GetLastCustomerRow()
 	if err != nil {
+		// If no records exist, return the first code "000001"
+		if err == sql.ErrNoRows {
+			br.l.Info("No existing customers found, returning first customer code")
+			return fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", 1))
+		}
+		// For other errors, fall back to GetCustomerCode
 		br.l.Error("fallBackCustomerCode generating", customerId, customerCode, err)
+		fallBackCustomerCode := br.GetCustomerCode()
 		return fallBackCustomerCode
 	}
 	br.l.Info("last customer:", customerId, customerCode)
@@ -339,14 +346,18 @@ func (br *PreRequisiteObj) GetNextCustomerCode() string {
 		if len(parts) == 2 {
 			num, err := strconv.Atoi(parts[1])
 			if err != nil {
-				panic(err)
+				br.l.Error("Error parsing customer code number:", err)
+				// Fall back to GetCustomerCode if parsing fails
+				fallBackCustomerCode := br.GetCustomerCode()
+				return fallBackCustomerCode
 			}
 			num = num + 1
-			newTripSheetNumber := fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", num))
-			return newTripSheetNumber
+			newCustomerCode := fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", num))
+			return newCustomerCode
 		}
 	}
-	br.l.Warn("fallBackCustomerCode generating", customerId, customerCode)
+	br.l.Warn("fallBackCustomerCode generating - invalid customer code format", customerId, customerCode)
+	fallBackCustomerCode := br.GetCustomerCode()
 	return fallBackCustomerCode
 }
 
@@ -379,27 +390,37 @@ func (br *PreRequisiteObj) GetVendorCode() string {
 }
 
 func (br *PreRequisiteObj) GetNextVendorCode() string {
-	fallBackVendorCode := br.GetVendorCode()
 	vendorId, vendorCode, err := br.preRequisiteDao.GetLastVendorRow()
 	if err != nil {
+		// If no records exist, return the first code "000001"
+		if err == sql.ErrNoRows {
+			br.l.Info("No existing vendors found, returning first vendor code")
+			return fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", 1))
+		}
+		// For other errors, fall back to GetVendorCode
 		br.l.Error("fallBackVendorCode generating", vendorId, vendorCode, err)
+		fallBackVendorCode := br.GetVendorCode()
 		return fallBackVendorCode
 	}
-	br.l.Info("last customer:", vendorId, vendorCode)
+	br.l.Info("last vendor:", vendorId, vendorCode)
 
 	if vendorCode != "" {
 		parts := strings.Split(vendorCode, "-")
 		if len(parts) == 2 {
 			num, err := strconv.Atoi(parts[1])
 			if err != nil {
-				panic(err)
+				br.l.Error("Error parsing vendor code number:", err)
+				// Fall back to GetVendorCode if parsing fails
+				fallBackVendorCode := br.GetVendorCode()
+				return fallBackVendorCode
 			}
 			num = num + 1
-			newTripSheetNumber := fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", num))
-			return newTripSheetNumber
+			newVendorCode := fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", num))
+			return newVendorCode
 		}
 	}
-	br.l.Warn("fallBackVendorCode generating", vendorId, vendorCode)
+	br.l.Warn("fallBackVendorCode generating - invalid vendor code format", vendorId, vendorCode)
+	fallBackVendorCode := br.GetVendorCode()
 	return fallBackVendorCode
 }
 
