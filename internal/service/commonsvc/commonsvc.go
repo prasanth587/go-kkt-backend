@@ -334,10 +334,9 @@ func (br *PreRequisiteObj) GetNextCustomerCode() string {
 			br.l.Info("No existing customers found, returning first customer code")
 			return fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", 1))
 		}
-		// For other errors, fall back to GetCustomerCode
-		br.l.Error("fallBackCustomerCode generating", customerId, customerCode, err)
-		fallBackCustomerCode := br.GetCustomerCode()
-		return fallBackCustomerCode
+		// For other errors, also return 000001 instead of using fallback that inserts into trip_sheet_num
+		br.l.Error("Error getting last customer row, returning first customer code", customerId, customerCode, err)
+		return fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", 1))
 	}
 	br.l.Info("last customer:", customerId, customerCode)
 
@@ -346,19 +345,18 @@ func (br *PreRequisiteObj) GetNextCustomerCode() string {
 		if len(parts) == 2 {
 			num, err := strconv.Atoi(parts[1])
 			if err != nil {
-				br.l.Error("Error parsing customer code number:", err)
-				// Fall back to GetCustomerCode if parsing fails
-				fallBackCustomerCode := br.GetCustomerCode()
-				return fallBackCustomerCode
+				br.l.Error("Error parsing customer code number, returning first customer code:", err)
+				// Return 000001 instead of using fallback
+				return fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", 1))
 			}
 			num = num + 1
 			newCustomerCode := fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", num))
 			return newCustomerCode
 		}
 	}
-	br.l.Warn("fallBackCustomerCode generating - invalid customer code format", customerId, customerCode)
-	fallBackCustomerCode := br.GetCustomerCode()
-	return fallBackCustomerCode
+	br.l.Warn("Invalid customer code format, returning first customer code", customerId, customerCode)
+	// Return 000001 instead of using fallback
+	return fmt.Sprintf("%v-%v", constant.CUSTOMER, fmt.Sprintf("%06d", 1))
 }
 
 func (br *PreRequisiteObj) GetVendorCode() string {
@@ -397,10 +395,9 @@ func (br *PreRequisiteObj) GetNextVendorCode() string {
 			br.l.Info("No existing vendors found, returning first vendor code")
 			return fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", 1))
 		}
-		// For other errors, fall back to GetVendorCode
-		br.l.Error("fallBackVendorCode generating", vendorId, vendorCode, err)
-		fallBackVendorCode := br.GetVendorCode()
-		return fallBackVendorCode
+		// For other errors, also return 000001 instead of using fallback that inserts into trip_sheet_num
+		br.l.Error("Error getting last vendor row, returning first vendor code", vendorId, vendorCode, err)
+		return fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", 1))
 	}
 	br.l.Info("last vendor:", vendorId, vendorCode)
 
@@ -409,19 +406,18 @@ func (br *PreRequisiteObj) GetNextVendorCode() string {
 		if len(parts) == 2 {
 			num, err := strconv.Atoi(parts[1])
 			if err != nil {
-				br.l.Error("Error parsing vendor code number:", err)
-				// Fall back to GetVendorCode if parsing fails
-				fallBackVendorCode := br.GetVendorCode()
-				return fallBackVendorCode
+				br.l.Error("Error parsing vendor code number, returning first vendor code:", err)
+				// Return 000001 instead of using fallback
+				return fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", 1))
 			}
 			num = num + 1
 			newVendorCode := fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", num))
 			return newVendorCode
 		}
 	}
-	br.l.Warn("fallBackVendorCode generating - invalid vendor code format", vendorId, vendorCode)
-	fallBackVendorCode := br.GetVendorCode()
-	return fallBackVendorCode
+	br.l.Warn("Invalid vendor code format, returning first vendor code", vendorId, vendorCode)
+	// Return 000001 instead of using fallback
+	return fmt.Sprintf("%v-%v", constant.VENDOR, fmt.Sprintf("%06d", 1))
 }
 
 func (br *PreRequisiteObj) financialYearsList(yearsBefore, yearsAfter int) []string {
