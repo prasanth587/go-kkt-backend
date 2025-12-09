@@ -251,11 +251,18 @@ func (br *PreRequisiteObj) GetTripSheetNumber() string {
 	return fmt.Sprintf("KKT%v%v", formatted, randomCode)
 }
 func (br *PreRequisiteObj) GetNextTripSheetNumber() string {
-	fallBackTripSheetNumber := br.GetTripSheetNumber()
 	tripSheetId, tripSheetNumber, err := br.preRequisiteDao.GetLastTripSheetRow()
 	if err != nil {
-		br.l.Error("fallBackTripSheetNumber generating", tripSheetId, tripSheetNumber, err)
-		return fallBackTripSheetNumber
+		// If no records exist, return the first trip sheet number "000001/YYYY-YYYY"
+		if err == sql.ErrNoRows {
+			financialYear := getFinancialYear(time.Now())
+			br.l.Info("No existing trip sheets found, returning first trip sheet number")
+			return fmt.Sprintf("%v/%v", fmt.Sprintf("%06d", 1), financialYear)
+		}
+		// For other errors, also return 000001 instead of using fallback that inserts into trip_sheet_num
+		financialYear := getFinancialYear(time.Now())
+		br.l.Error("Error getting last trip sheet row, returning first trip sheet number", tripSheetId, tripSheetNumber, err)
+		return fmt.Sprintf("%v/%v", fmt.Sprintf("%06d", 1), financialYear)
 	}
 	br.l.Info("last trip_sheet id", tripSheetId, tripSheetNumber)
 
@@ -264,17 +271,21 @@ func (br *PreRequisiteObj) GetNextTripSheetNumber() string {
 		if len(parts) == 2 {
 			num, err := strconv.Atoi(parts[0])
 			if err != nil {
-				panic(err)
+				br.l.Error("Error parsing trip sheet number, returning first trip sheet number:", err)
+				// Return 000001 instead of using fallback
+				financialYear := getFinancialYear(time.Now())
+				return fmt.Sprintf("%v/%v", fmt.Sprintf("%06d", 1), financialYear)
 			}
 			num = num + 1
 			financialYear := getFinancialYear(time.Now())
 			newTripSheetNumber := fmt.Sprintf("%v/%v", fmt.Sprintf("%06d", num), financialYear)
-
 			return newTripSheetNumber
 		}
 	}
-	br.l.Warn("fallBackTripSheetNumber generating", tripSheetId, tripSheetNumber)
-	return fallBackTripSheetNumber
+	br.l.Warn("Invalid trip sheet number format, returning first trip sheet number", tripSheetId, tripSheetNumber)
+	// Return 000001 instead of using fallback
+	financialYear := getFinancialYear(time.Now())
+	return fmt.Sprintf("%v/%v", fmt.Sprintf("%06d", 1), financialYear)
 }
 
 func getFinancialYear(t time.Time) string {

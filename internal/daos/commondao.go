@@ -79,7 +79,7 @@ func (br *PreRequisiteObj) GetLoadingPoints(orgId int64) (*[]dtos.LoadingPoints,
 func (br *PreRequisiteObj) GetLastTripSheetRow() (int64, string, error) {
 
 	lastTripQuery := `SELECT trip_sheet_id, trip_sheet_num 
-	FROM trip_sheet_header ORDER BY trip_sheet_id DESC LIMIT 1;`
+	FROM trip_sheet_header ORDER BY trip_sheet_num DESC LIMIT 1;`
 
 	br.l.Info("lastTripQuery:\n ", lastTripQuery)
 
