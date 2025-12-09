@@ -549,6 +549,7 @@ type CreateTripSheetHeader struct {
 	VehicleCapacityTon string `json:"vehicle_capacity_ton"`
 	VehicleNumber      string `json:"vehicle_number"`
 	VehicleSize        string `json:"vehicle_size"`
+	VehicleSizeID      int64  `json:"vehicle_size_id"`
 	MobileNumber       string `json:"mobile_number"`
 	DriverName         string `json:"driver_name"`
 	DriverLicenseImage string `json:"driver_license_image"`

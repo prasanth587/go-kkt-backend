@@ -57,6 +57,16 @@ func (trp *TripSheetObj) CreateTripSheetHeader(tripSheetReq dtos.CreateTripSheet
 	}
 	trp.l.Info("trip sheet type: ", tripSheetReq.TripSheetType)
 
+	// Parse VehicleSize to VehicleSizeID if VehicleSizeID is not set but VehicleSize is
+	if tripSheetReq.VehicleSizeID == 0 && tripSheetReq.VehicleSize != "" {
+		if vehicleSizeID, err := strconv.ParseInt(tripSheetReq.VehicleSize, 10, 64); err == nil {
+			tripSheetReq.VehicleSizeID = vehicleSizeID
+		} else {
+			trp.l.Error("ERROR: Failed to parse VehicleSize to VehicleSizeID: ", tripSheetReq.VehicleSize, err)
+			return nil, fmt.Errorf("invalid vehicle_size value: %s", tripSheetReq.VehicleSize)
+		}
+	}
+
 	createTripSheetQuery := ""
 	if strings.EqualFold(tripSheetReq.TripSheetType, constant.LOCAL_SCHEDULED_TRIP) ||
 		strings.EqualFold(tripSheetReq.TripSheetType, constant.LOCAL_ADHOC_TRIP) {

@@ -205,14 +205,14 @@ func (trp *TripSheetObj) CreateTripSheetBuildQuery(tripSheetReq dtos.CreateTripS
 		load_hours_type, open_trip_date_time, branch_id, 
 		customer_id, 
 		vendor_id, vehicle_capacity_ton, vehicle_number, 
-		vehicle_size, mobile_number, driver_name, 
+		vehicle_size, vehicle_size_id, mobile_number, driver_name, 
 		driver_license_image, org_id, zonal_name, load_status, created_by)
 	VALUES
 		('%v', '%v', '%v', 
 		'%v', '%v', '%v', 
 		'%v', 
 		'%v', '%v', '%v', 
-		'%v', '%v', '%v', 
+		'%v', '%v', '%v', '%v', 
 		'%v','%v','%v', '%v','%v')`,
 		tripSheetReq.TripSheetNum,
 		tripSheetReq.TripType,
@@ -225,6 +225,7 @@ func (trp *TripSheetObj) CreateTripSheetBuildQuery(tripSheetReq dtos.CreateTripS
 		tripSheetReq.VehicleCapacityTon,
 		tripSheetReq.VehicleNumber,
 		tripSheetReq.VehicleSize,
+		tripSheetReq.VehicleSizeID,
 		tripSheetReq.MobileNumber,
 		tripSheetReq.DriverName,
 		tripSheetReq.DriverLicenseImage, tripSheetReq.OrgId, tripSheetReq.ZonalName, tripSheetReq.LoadStatus, tripSheetReq.UserLoginId)
