@@ -97,7 +97,7 @@ func (br *PreRequisiteObj) GetLastTripSheetRow() (int64, string, error) {
 func (br *PreRequisiteObj) GetLastCustomerRow() (int64, string, error) {
 
 	lastCustomerQuery := `SELECT customer_id, customer_code 
-	FROM customers ORDER BY customer_id DESC LIMIT 1;`
+	FROM customers ORDER BY customer_code DESC LIMIT 1;`
 
 	br.l.Info("lastCustomerQuery:\n ", lastCustomerQuery)
 
@@ -115,7 +115,7 @@ func (br *PreRequisiteObj) GetLastCustomerRow() (int64, string, error) {
 func (br *PreRequisiteObj) GetLastVendorRow() (int64, string, error) {
 
 	lastVendorQuery := `SELECT vendor_id, vendor_code 
-	FROM vendors ORDER BY vendor_id DESC LIMIT 1;`
+	FROM vendors ORDER BY vendor_code DESC LIMIT 1;`
 
 	br.l.Info("lastVendorQuery:\n ", lastVendorQuery)
 
