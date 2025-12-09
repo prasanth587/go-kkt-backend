@@ -46,9 +46,16 @@ func (tr *TripSheetObj) UploadTripSheetImages(imageFor, tripSheetNumber string, 
 	tr.l.Infof("trip sheet path: %v", fullPath)
 	err := os.MkdirAll(fullPath, os.ModePerm) // os.ModePerm sets permissions to 0777
 	if err != nil {
-		tr.l.Error("ERROR: MkdirAll ", fullPath, err)
-		return nil, err
+		tr.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
+		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
+	
+	// Verify directory was created
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		tr.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
+		return nil, fmt.Errorf("directory was not created: %s", fullPath)
+	}
+	
 	extension := strings.Split(fileHeader.Filename, ".")
 	lengthExt := len(extension)
 

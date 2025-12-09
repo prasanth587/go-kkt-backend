@@ -475,8 +475,14 @@ func (ul *VendorObj) UploadVendorImages(vendorId int64, imageFor string, file mu
 
 	err := os.MkdirAll(fullPath, os.ModePerm) // os.ModePerm sets permissions to 0777
 	if err != nil {
-		ul.l.Error("ERROR: MkdirAll ", fullPath, err)
-		return nil, err
+		ul.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
+		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
+	}
+	
+	// Verify directory was created
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		ul.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
+		return nil, fmt.Errorf("directory was not created: %s", fullPath)
 	}
 
 	extension := strings.Split(fileHeader.Filename, ".")
@@ -561,7 +567,7 @@ func (vo *VendorObj) UploadVendorImagesV1(vendorCode string, imageFor string,
 
 	// Use original vendorCode for directory path (before adding timestamp)
 	originalVendorCode := vendorCode
-	
+
 	// Add timestamp to vendorCode for filename if needed (but not for pancard_img and bank_passbook_or_cheque_img)
 	if imageFor != "pancard_img" && imageFor != "bank_passbook_or_cheque_img" {
 		currentMillis := time.Now().In(utils.TimeLoc()).UnixNano() / int64(time.Millisecond)
@@ -579,7 +585,7 @@ func (vo *VendorObj) UploadVendorImagesV1(vendorCode string, imageFor string,
 		vo.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		vo.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
