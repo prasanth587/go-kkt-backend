@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	lg "log"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -291,18 +293,59 @@ func ViweImage(w http.ResponseWriter, r *http.Request) {
 	rd := logAndGetContext(w, r)
 	image := r.URL.Query().Get("image")
 
-	//baseDirectory := os.Getenv("BASE_DIRECTORY")
-	imagePath := filepath.Join(baseDirectory, image)
-	rd.l.Info("Image: ", imagePath)
+	if image == "" {
+		rd.l.Error("ViweImage error: image parameter is empty")
+		writeJSONMessage("image parameter is required", ERR_MSG, http.StatusBadRequest, rd)
+		return
+	}
+
+	// Get BASE_DIRECTORY fresh each time in case it changes
+	currentBaseDirectory := os.Getenv("BASE_DIRECTORY")
+	if currentBaseDirectory == "" {
+		currentBaseDirectory = baseDirectory
+	}
+	if currentBaseDirectory == "" {
+		rd.l.Error("ViweImage error: BASE_DIRECTORY environment variable is not set")
+		writeJSONMessage("BASE_DIRECTORY environment variable is not set", ERR_MSG, http.StatusInternalServerError, rd)
+		return
+	}
+
+	// Construct the full image path
+	// image parameter from URL is already a relative path like "t_hub_document/vendor/VEN-000001/filename"
+	// BASE_DIRECTORY should be something like "/app" or "/app/uploads"
+	// So we join them to get the full path
+	imagePath := filepath.Join(currentBaseDirectory, image)
+	rd.l.Info("ViweImage - BASE_DIRECTORY: ", currentBaseDirectory, ", image param: ", image, ", full path: ", imagePath)
+
+	// Check if file exists before trying to read
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		rd.l.Error("ViweImage error: file does not exist at path: ", imagePath)
+		writeJSONMessage(fmt.Sprintf("file not found: %s", imagePath), ERR_MSG, http.StatusNotFound, rd)
+		return
+	}
 
 	imageByte, err := os.ReadFile(imagePath)
 	if err != nil {
-		rd.l.Error("ViweImage error: ", err)
-		writeJSONMessage(err.Error(), ERR_MSG, http.StatusBadRequest, rd)
+		rd.l.Error("ViweImage error reading file: ", err, " at path: ", imagePath)
+		writeJSONMessage(fmt.Sprintf("failed to read file: %s", err.Error()), ERR_MSG, http.StatusBadRequest, rd)
 		return
 	}
-	//w.Header().Set("Content-Type", "image/png")
-	//w.Write(imageByte)
+	
+	// Determine content type based on file extension
+	ext := filepath.Ext(imagePath)
+	contentType := "image/png" // default
+	switch strings.ToLower(ext) {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+	case ".png":
+		contentType = "image/png"
+	case ".gif":
+		contentType = "image/gif"
+	case ".pdf":
+		contentType = "application/pdf"
+	}
+	
+	rd.w.Header().Set("Content-Type", contentType)
 	writeImageResponse(imageByte, http.StatusOK, rd)
 }
 
