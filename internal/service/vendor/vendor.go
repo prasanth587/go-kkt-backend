@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/prabha303-vi/log-util/log"
 
@@ -522,63 +521,5 @@ func (ul *VendorObj) UploadVendorImages(vendorId int64, imageFor string, file mu
 	ul.l.Info("Image uploaded successfully: ", vendorInfo.VendorName)
 	roleResponse := dtos.Messge{}
 	roleResponse.Message = fmt.Sprintf("Image uploaded successfully : %v", vendorInfo.VendorName)
-	return &roleResponse, nil
-}
-
-
-			vo.l.Error("updating  is already exitis: ", vendorCode, uploadPath, err)
-		} else {
-			vo.l.Error("vendorCodeImageFullPath create error: ", vendorCode, uploadPath, err)
-			defer out.Close()
-			return nil, err
-		}
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, file)
-	if err != nil {
-		vo.l.Error("vendor upload Copy error: ", vendorCode, uploadPath, err)
-		return nil, err
-	}
-
-	imageDirectory = filepath.Join(imageDirectory, imageName)
-	vo.l.Info("##### table to be stored path: ", imageFor, vendorCodeImageFullPath, imageDirectory)
-
-	imageVehicle := [...]string{
-		"rc_expiry_doc",
-		"insurance_doc",
-		"pucc_expiry_doc",
-		"np_expire_doc",
-		"fitness_expiry_doc",
-		"tax_expiry_doc",
-		"mp_expire_doc",
-		"tds_declaration",
-	}
-	existsVehicle := false
-	for _, imgType := range imageVehicle {
-		if imgType == imageFor {
-			existsVehicle = true
-			break
-		}
-	}
-	if existsVehicle && vehicleID != "" {
-		errU := vo.vendorDao.UpdateVehicleImage(vehicleID, imageFor, imageDirectory)
-		if errU != nil {
-			vo.l.Error("ERROR: UpdateVehicleImage", vendorId, vehicleID, errU)
-			return nil, errU
-		}
-	} else if vendorId != "" {
-		errU := vo.vendorDao.UpdateVendorImage(vendorId, imageFor, imageDirectory)
-		if errU != nil {
-			vo.l.Error("ERROR: UpdateVendorImage", vendorId, errU)
-			return nil, errU
-		}
-	}
-
-	vo.l.Info("Image uploaded successfully: ", imageFor, vendorCode)
-	roleResponse := dtos.UploadResponse{}
-	roleResponse.Message = fmt.Sprintf("Image uploaded successfully : %v,%v", imageFor, vendorCode)
-	roleResponse.ImagePath = imageDirectory
-	//roleResponse.VendorCode = vendorCode
 	return &roleResponse, nil
 }
