@@ -536,7 +536,7 @@ func (ts *TripSheetXls) GetTripSheetByIds(orgId int64, tripSheetIds string) (*[]
 			driverLicenseImage, lrGateImage, lrNumber, customerCloseTripDT, customerInvoiceNo,
 			customerPaymentDate, customerRemark, customerBillingDate, vendorPaidDate, vendorCrossDock, vendorRemark,
 			customerPlacedVehicleSize, customerLoadCancelled, vendorPaidBy, loadStatus, customerCode, customerName,
-			customerReportedDateTimeForHaltingCalc, zonalName, vendorBreakDown sql.NullString
+			customerReportedDateTimeForHaltingCalc, zonalName, vendorBreakDown, vendorName, vendorCode sql.NullString
 
 			tripSheetID, branchID, customerID, vendorID, podRequired, podReceived sql.NullInt64
 			customerBaseRate, customerKmCost, customerToll, customerExtraHours, customerExtraKm, customerTotalHire, customerDebitAmount,
@@ -558,6 +558,8 @@ func (ts *TripSheetXls) GetTripSheetByIds(orgId int64, tripSheetIds string) (*[]
 			&customerName,
 			&customerCode,
 			&vendorID,
+			&vendorName,
+			&vendorCode,
 			&vehicleCapacityTon,
 			&vehicleNumber,
 			&vehicleSize,
