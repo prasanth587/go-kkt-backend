@@ -502,7 +502,7 @@ func (ts *TripSheetXls) GetTripSheetByIds(orgId int64, tripSheetIds string) (*[]
         t.trip_sheet_id, t.trip_sheet_num, t.trip_type, t.trip_sheet_type, 
         t.load_hours_type, t.open_trip_date_time, t.branch_id, t.customer_id, 
         c.customer_name, c.customer_code,
-        t.vendor_id, 
+        t.vendor_id, v.vendor_name, v.vendor_code,
         t.vehicle_capacity_ton, t.vehicle_number, CONCAT(vs.vehicle_size, ' (', vs.vehicle_type, ')') AS vehicle_size_type, 
         t.mobile_number, t.driver_name, t.driver_license_image, t.lr_gate_image, t.lr_number,
         t.customer_base_rate, t.customer_km_cost, t.customer_toll, t.customer_extra_hours,
@@ -517,6 +517,7 @@ func (ts *TripSheetXls) GetTripSheetByIds(orgId int64, tripSheetIds string) (*[]
         t.vendor_halting_paid, t.vendor_extra_delivery, t.load_status, t.customer_reported_date_time_for_halting_calc, t.vendor_break_down, t.zonal_name
     FROM trip_sheet_header t
     LEFT JOIN customers c ON t.customer_id = c.customer_id
+    LEFT JOIN vendors v ON t.vendor_id = v.vendor_id
 	LEFT JOIN vehicle_size_type vs ON t.vehicle_size = vs.vehicle_size_id 
     %v`, whereQuery)
 
