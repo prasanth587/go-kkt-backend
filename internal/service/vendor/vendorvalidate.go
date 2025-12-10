@@ -98,34 +98,7 @@ func (vh *VendorObj) validateVendor(vendorReg dtos.VendorRequest) error {
 				vh.l.Error("Error: VehicleModel should not empty")
 				return errors.New("vehicle model should not empty")
 			}
-			if vehicleObj.RCExpiryDoc == "" {
-				vh.l.Error("Error: RCExpiryDoc should not empty")
-				return errors.New("rc doc should not empty")
-			}
-			if vehicleObj.InsuranceDoc == "" {
-				vh.l.Error("Error: InsuranceDoc should not empty")
-				return errors.New("insurance doc should not empty")
-			}
-			if vehicleObj.PUCCExpiryDoc == "" {
-				vh.l.Error("Error: PUCCExpiryDoc should not empty")
-				return errors.New("PUCC doc should not empty")
-			}
-			if vehicleObj.NPExpireDoc == "" {
-				vh.l.Error("Error: NP should not empty")
-				return errors.New("NP doc should not empty")
-			}
-			if vehicleObj.FitnessExpiryDoc == "" {
-				vh.l.Error("Error: FitnessExpiryDoc should not empty")
-				return errors.New("FitnessExpiry doc should not empty")
-			}
-			if vehicleObj.TaxExpiryDoc == "" {
-				vh.l.Error("Error: TaxExpiryDoc should not empty")
-				return errors.New("tax expiry doc should not empty")
-			}
-			if vehicleObj.MPExpireDoc == "" {
-				vh.l.Error("Error: MPExpireDoc should not empty")
-				return errors.New("mp expiry doc should not empty")
-			}
+			// Vehicle document uploads (RC, Insurance, PUCC, NP, Fitness, Tax, MP) are now optional
 			if vehicleObj.VehicleSize == "" {
 				vh.l.Error("Error: VehicleSize should not empty")
 				return errors.New("vehicle size should not empty")
