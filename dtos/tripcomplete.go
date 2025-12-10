@@ -114,6 +114,8 @@ type DownloadTripSheetXls struct {
 	CustomerName       string `json:"customer_name"`
 	CustomerCode       string `json:"customer_code"`
 	VendorID           int64  `json:"vendor_id"`
+	VendorName         string `json:"vendor_name"`
+	VendorCode         string `json:"vendor_code"`
 	LoadingPointIDs    string `json:"loading_points"`
 	UnLoadingPointIDs  string `json:"un_loading_point"`
 	VehicleCapacityTon string `json:"vehicle_capacity_ton"`

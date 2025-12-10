@@ -625,6 +625,8 @@ func (ts *TripSheetXls) GetTripSheetByIds(orgId int64, tripSheetIds string) (*[]
 			LoadHoursType:                          loadHoursType.String,
 			OpenTripDateTime:                       openTripDateTime.String,
 			VendorID:                               vendorID.Int64,
+			VendorName:                             vendorName.String,
+			VendorCode:                             vendorCode.String,
 			VehicleCapacityTon:                     vehicleCapacityTon.String,
 			VehicleNumber:                          vehicleNumber.String,
 			VehicleSize:                            vehicleSize.String,

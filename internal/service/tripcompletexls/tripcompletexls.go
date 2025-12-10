@@ -435,8 +435,13 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			xml.WriteString("</NARRATION>")
 			xml.WriteString("\n          <VOUCHERTYPE>Payment</VOUCHERTYPE>")
 			
-			// Vendor name - format: Vendor_[ID]. User can map this to actual vendor name in Tally
-			vendorName := fmt.Sprintf("Vendor_%d", trip.VendorID)
+			// Use actual vendor name, or fallback to Vendor_[ID] if name is empty
+			vendorName := trip.VendorName
+			if vendorName == "" {
+				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, fmt.Sprintf("Vendor_%d", trip.VendorID))
+			} else if trip.VendorCode != "" {
+				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, vendorName)
+			}
 			
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
