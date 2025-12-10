@@ -80,8 +80,17 @@ func (tr *TripSheetObj) UploadTripSheetImages(imageFor, tripSheetNumber string, 
 	_, err = io.Copy(out, file)
 	if err != nil {
 		tr.l.Error("tripNumber upload Copy error: ", tripNumber, uploadPath, err)
-		return nil, err
+		out.Close()
+		return nil, fmt.Errorf("failed to copy file: %w", err)
 	}
+	out.Close() // Close file explicitly before verifying
+
+	// Verify file was created successfully
+	if _, err := os.Stat(tsImageFullPath); os.IsNotExist(err) {
+		tr.l.Error("ERROR: File was not created after upload: ", tsImageFullPath)
+		return nil, fmt.Errorf("file was not created: %s", tsImageFullPath)
+	}
+	tr.l.Info("File uploaded and verified successfully: ", tsImageFullPath)
 
 	//
 	imageDirectory = filepath.Join(imageDirectory, imageName)
@@ -94,7 +103,8 @@ func (tr *TripSheetObj) UploadTripSheetImages(imageFor, tripSheetNumber string, 
 	if errU != nil {
 		errS := errU.Error()
 		tr.l.Error("ERROR: UpdateTripSheetImagePath", tripSheetNumber, errU, errS)
-		//return nil, errU
+		// Don't return error if update fails, file is already saved
+		// But log it for debugging
 	}
 
 	tr.l.Info("Image uploaded successfully: ", tripSheetNumber)
