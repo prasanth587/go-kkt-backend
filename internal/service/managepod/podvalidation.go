@@ -26,10 +26,7 @@ func (mp *ManagePod) validatePOD(podReq dtos.ManagePodReq) error {
 		mp.l.Error("Error PODSubmitedDate: pod submite should not empty")
 		return errors.New("pod submite should not empty")
 	}
-	if podReq.LateSubmissionDebit == 0.0 && podReq.TripType == constant.TRIP_TYPE_POD {
-		mp.l.Error("Error LateSubmissionDebit: late submission debit should not empty")
-		return errors.New("late submission debit should not empty")
-	}
+	// LateSubmissionDebit, UnloadingCharges, and HaltingAmount are now optional (can be 0 or empty)
 
 	if podReq.PodRemark == "" {
 		mp.l.Error("Error PodRemark: pod remark should not empty")
@@ -77,10 +74,7 @@ func (mp *ManagePod) validateUpdatePOD(podReq dtos.UpdateManagePodReq) error {
 		mp.l.Error("Error PODSubmitedDate: pod submite should not empty")
 		return errors.New("pod submite should not empty")
 	}
-	if podReq.LateSubmissionDebit == 0.0 && podReq.TripType == constant.TRIP_TYPE_POD {
-		mp.l.Error("Error LateSubmissionDebit: late submission debit should not empty")
-		return errors.New("late submission debit should not empty")
-	}
+	// LateSubmissionDebit, UnloadingCharges, and HaltingAmount are now optional (can be 0 or empty)
 
 	if podReq.PodRemark == "" {
 		mp.l.Error("Error PodRemark: pod remark should not empty")
