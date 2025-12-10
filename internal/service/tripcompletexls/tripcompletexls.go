@@ -332,6 +332,166 @@ func (ts *TripSheetXls) GetTripsByIds(orgId int64, tripSheetIds string) ([]byte,
 
 }
 
+func (ts *TripSheetXls) GetTripsByIdsTally(orgId int64, tripSheetIds string) ([]byte, error) {
+	if tripSheetIds == "" {
+		return nil, errors.New("tripSheetIds should not be empty")
+	}
+	tripSheetIds = strings.ReplaceAll(tripSheetIds, " ", "")
+	
+	if !ts.isNotValideTripSheetIDs(tripSheetIds) {
+		ts.l.Error("tripSheetIds is not a expected format. ", tripSheetIds)
+		return nil, errors.New("tripSheetIds is not a expected format")
+	}
+
+	res, tripSheetIdPesent, errA := ts.tripSheetXlsDao.GetTripSheetByIds(orgId, tripSheetIds)
+	if errA != nil {
+		ts.l.Error("ERROR: GetTripSheetByIds", errA)
+		return nil, errA
+	}
+
+	if len(*res) == 0 {
+		return nil, errors.New("no trip sheets found")
+	}
+
+	// Generate Tally XML
+	xml := ts.generateTallyXML(res, tripSheetIdPesent)
+	return []byte(xml), nil
+}
+
+func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tripSheetIds []string) string {
+	var xml strings.Builder
+	xml.WriteString(`<?xml version="1.0"?>`)
+	xml.WriteString("\n<ENVELOPE>")
+	xml.WriteString("\n  <HEADER>")
+	xml.WriteString("\n    <VERSION>1</VERSION>")
+	xml.WriteString("\n    <TALLYREQUEST>Import</TALLYREQUEST>")
+	xml.WriteString("\n    <TYPE>Data</TYPE>")
+	xml.WriteString("\n    <ID>Vouchers</ID>")
+	xml.WriteString("\n  </HEADER>")
+	xml.WriteString("\n  <BODY>")
+	xml.WriteString("\n    <DESC>")
+	xml.WriteString("\n      <STATICVARIABLES>")
+	xml.WriteString("\n        <IMPORTDUPS>@@DUPCOMBINE</IMPORTDUPS>")
+	xml.WriteString("\n      </STATICVARIABLES>")
+	xml.WriteString("\n    </DESC>")
+	xml.WriteString("\n    <DATA>")
+	xml.WriteString("\n      <TALLYMESSAGE>")
+
+	voucherCount := 0
+	for _, trip := range *trips {
+		// Generate Sales Voucher for Customer (if customer has billing)
+		if trip.CustomerTotalHire > 0 && trip.CustomerInvoiceNo != "" {
+			voucherCount++
+			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Sales\" ACTION=\"Create\">")
+			xml.WriteString("\n          <DATE>" + ts.formatDateForTally(trip.CustomerBillingRaisedDate, trip.OpenTripDateTime) + "</DATE>")
+			xml.WriteString("\n          <NARRATION>Transport Service - " + trip.TripSheetNum)
+			if trip.LRNumber != "" {
+				xml.WriteString(" - LR: " + trip.LRNumber)
+			}
+			xml.WriteString("</NARRATION>")
+			xml.WriteString("\n          <VOUCHERTYPE>Sales</VOUCHERTYPE>")
+			xml.WriteString("\n          <VOUCHERNUMBER>" + trip.CustomerInvoiceNo + "</VOUCHERNUMBER>")
+			xml.WriteString("\n          <PARTYNAME>" + ts.escapeXML(trip.CustomerName) + "</PARTYNAME>")
+			
+			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
+			xml.WriteString("\n            <LEDGERNAME>" + ts.escapeXML(trip.CustomerName) + "</LEDGERNAME>")
+			xml.WriteString("\n            <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>")
+			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(trip.CustomerTotalHire) + "</AMOUNT>")
+			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
+			
+			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
+			xml.WriteString("\n            <LEDGERNAME>Sales - Transport</LEDGERNAME>")
+			xml.WriteString("\n            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>")
+			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(trip.CustomerTotalHire) + "</AMOUNT>")
+			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
+			
+			xml.WriteString("\n        </VOUCHER>")
+		}
+
+		// Generate Payment Voucher for Vendor (if vendor payment exists)
+		// Calculate vendor total: VendorTotalHire + VendorLoadUnLoadAmount + VendorHaltingPaid + VendorExtraDelivery
+		vendorTotal := trip.VendorTotalHire
+		if trip.VendorLoadUnLoadAmount > 0 {
+			vendorTotal += trip.VendorLoadUnLoadAmount
+		}
+		if trip.VendorHaltingPaid > 0 {
+			vendorTotal += trip.VendorHaltingPaid
+		}
+		if trip.VendorExtraDelivery > 0 {
+			vendorTotal += trip.VendorExtraDelivery
+		}
+		if trip.VendorAdvance > 0 {
+			vendorTotal -= trip.VendorAdvance // Advance is deducted
+		}
+		
+		if vendorTotal > 0 && trip.VendorPaidDate != "" {
+			voucherCount++
+			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Payment\" ACTION=\"Create\">")
+			xml.WriteString("\n          <DATE>" + ts.formatDateForTally(trip.VendorPaidDate, trip.OpenTripDateTime) + "</DATE>")
+			xml.WriteString("\n          <NARRATION>Vendor Payment - " + trip.TripSheetNum)
+			if trip.LRNumber != "" {
+				xml.WriteString(" - LR: " + trip.LRNumber)
+			}
+			xml.WriteString("</NARRATION>")
+			xml.WriteString("\n          <VOUCHERTYPE>Payment</VOUCHERTYPE>")
+			
+			// Vendor name - format: Vendor_[ID]. User can map this to actual vendor name in Tally
+			vendorName := fmt.Sprintf("Vendor_%d", trip.VendorID)
+			
+			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
+			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
+			xml.WriteString("\n            <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>")
+			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(vendorTotal) + "</AMOUNT>")
+			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
+			
+			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
+			xml.WriteString("\n            <LEDGERNAME>" + ts.escapeXML(vendorName) + "</LEDGERNAME>")
+			xml.WriteString("\n            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>")
+			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(vendorTotal) + "</AMOUNT>")
+			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
+			
+			xml.WriteString("\n        </VOUCHER>")
+		}
+	}
+
+	xml.WriteString("\n      </TALLYMESSAGE>")
+	xml.WriteString("\n    </DATA>")
+	xml.WriteString("\n  </BODY>")
+	xml.WriteString("\n</ENVELOPE>")
+	
+	ts.l.Info("Generated Tally XML with ", voucherCount, " vouchers")
+	return xml.String()
+}
+
+func (ts *TripSheetXls) formatDateForTally(dateStr, fallbackDate string) string {
+	if dateStr == "" {
+		dateStr = fallbackDate
+	}
+	// Tally expects YYYYMMDD format
+	// Try parsing common formats
+	layouts := []string{"2006-01-02", "2006-01-02 15:04:05", "02-01-2006", "02/01/2006", "2006-01-02T15:04:05"}
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, dateStr); err == nil {
+			return t.Format("20060102")
+		}
+	}
+	// If parsing fails, use current date
+	return time.Now().Format("20060102")
+}
+
+func (ts *TripSheetXls) formatAmount(amount float64) string {
+	return fmt.Sprintf("%.2f", amount)
+}
+
+func (ts *TripSheetXls) escapeXML(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	s = strings.ReplaceAll(s, "\"", "&quot;")
+	s = strings.ReplaceAll(s, "'", "&apos;")
+	return s
+}
+
 func (ts *TripSheetXls) isNotValideTripSheetIDs(tripSheetIDs string) bool {
 	pattern := `^\d+(,\d+)*$`
 	matched, errA := regexp.MatchString(pattern, tripSheetIDs)

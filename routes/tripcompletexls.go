@@ -18,6 +18,7 @@ import (
 func tripcompleteXLS(router *httprouter.Router, recoverHandler alice.Chain) {
 	router.GET("/v1/:orgId/trip/sheets/xls", wrapHandler(recoverHandler.ThenFunc(getTripSheetsList)))
 	router.GET("/v1/:orgId/downlaod/trip/sheet", wrapHandler(recoverHandler.ThenFunc(downloadTripsByIds)))
+	router.GET("/v1/:orgId/download/trip/sheet/tally", wrapHandler(recoverHandler.ThenFunc(downloadTripsByIdsTally)))
 	router.POST("/v1/update/customer/invoice/xls", wrapHandler(recoverHandler.ThenFunc(updateCustomerPaymantInfoXls)))
 }
 
@@ -207,6 +208,35 @@ func downloadTripsByIdsForDraftInvoice(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 	//writeJSONStruct(res, http.StatusOK, rd)
 
+}
+
+func downloadTripsByIdsTally(w http.ResponseWriter, r *http.Request) {
+	rd := logAndGetContext(w, r)
+	keys := r.URL.Query()
+	tripSheetids := keys.Get("trip_sheet_ids")
+
+	orgID, isErr := GetIDFromParams(w, r, "orgId")
+	rd.l.Info("orgID", orgID, "tripSheetids", tripSheetids)
+	if !isErr {
+		return
+	}
+	dn := tripcompletexls.New(rd.l, rd.dbConnMSSQL)
+	res, err := dn.GetTripsByIdsTally(orgID, tripSheetids)
+	if err != nil {
+		rd.l.Error("GetTripsByIdsTally error: ", err)
+		writeJSONMessage(err.Error(), ERR_MSG, http.StatusBadRequest, rd)
+		return
+	}
+
+	fileName, _ := extractDate()
+	fileName = fmt.Sprintf("attachment; filename=KKT_TripSheet_Tally_%s.xml", fileName)
+
+	// Set the correct headers for XML file download
+	w.Header().Set("Content-Disposition", fileName)
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+
+	// Write the XML bytes to the response
+	w.Write(res)
 }
 
 func generateDraftInvoiceByTripxls(w http.ResponseWriter, r *http.Request) {
