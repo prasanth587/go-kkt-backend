@@ -211,8 +211,8 @@ func (trp *TripSheetObj) GetTripSheetChallanInfo(tripSheetId int64, loginId stri
 
 	// those are needs to be discussed.....
 	tripStats.ReceivedDate = tripSheetInfo.CustomerPaymentReceivedDate
-	tripStats.CompanyName = "KKT Transport"
-	tripStats.IssuedBy = "KKT Transport"
+	tripStats.CompanyName = "KK Transport"
+	tripStats.IssuedBy = "KK Transport"
 	tripStats.OfficeApprovedBy = fmt.Sprintf("%s %s", loginDetails.FirstName, loginDetails.LastName)
 	tripStats.OfficeAuthorizedBy = "User root"
 	tripStats.Notes = ""
