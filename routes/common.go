@@ -320,7 +320,8 @@ func ViweImage(w http.ResponseWriter, r *http.Request) {
 	// Check if file exists before trying to read
 	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 		rd.l.Error("ViweImage error: file does not exist at path: ", imagePath)
-		writeJSONMessage(fmt.Sprintf("file not found: %s", imagePath), ERR_MSG, http.StatusNotFound, rd)
+		// Provide a more user-friendly error message
+		writeJSONMessage("Image file not found. This may happen if the server was redeployed. Please re-upload the image.", ERR_MSG, http.StatusNotFound, rd)
 		return
 	}
 
