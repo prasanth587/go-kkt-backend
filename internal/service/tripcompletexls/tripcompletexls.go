@@ -381,13 +381,16 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	customerMap := make(map[string]bool)
 	vendorMap := make(map[string]bool)
 
+	// First pass: Collect all customers and vendors that will be used in vouchers
 	for _, trip := range *trips {
-		// Collect customers
+		// Collect customers (for sales vouchers)
 		if trip.CustomerName != "" && trip.CustomerTotalHire > 0 && trip.CustomerInvoiceNo != "" {
 			customerMap[trip.CustomerName] = true
+			ts.l.Info("Collecting customer for ledger: ", trip.CustomerName)
 		}
 
-		// Collect vendors
+		// Collect vendors (for payment vouchers)
+		// Calculate vendor total
 		vendorTotal := trip.VendorTotalHire
 		if trip.VendorLoadUnLoadAmount > 0 {
 			vendorTotal += trip.VendorLoadUnLoadAmount
@@ -402,14 +405,17 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			vendorTotal -= trip.VendorAdvance
 		}
 
-		if vendorTotal > 0 && trip.VendorPaidDate != "" {
+		// Collect vendor if there's a payment (even if date is missing, we'll create ledger)
+		if vendorTotal > 0 {
 			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
 			if vendorName != "" {
 				vendorMap[vendorName] = true
-				ts.l.Info("Collecting vendor for ledger creation: ", vendorName)
+				ts.l.Info("Collecting vendor for ledger creation: ", vendorName, " (total: ", vendorTotal, ", date: ", trip.VendorPaidDate, ")")
 			}
 		}
 	}
+
+	ts.l.Info("Total customers collected: ", len(customerMap), ", Total vendors collected: ", len(vendorMap))
 
 	// Generate "Sales - Transport" ledger (required for sales vouchers)
 	xml.WriteString("\n        <LEDGER NAME=\"Sales - Transport\" ACTION=\"Create\">")
@@ -450,9 +456,11 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n      <TALLYMESSAGE>")
 
 	voucherCount := 0
+	ts.l.Info("Starting voucher generation for ", len(*trips), " trip sheets")
 	for _, trip := range *trips {
 		// Generate Sales Voucher for Customer (if customer has billing)
 		if trip.CustomerTotalHire > 0 && trip.CustomerInvoiceNo != "" {
+			ts.l.Info("Creating sales voucher for customer: ", trip.CustomerName, ", amount: ", trip.CustomerTotalHire)
 			voucherCount++
 			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Sales\" ACTION=\"Create\">")
 			xml.WriteString("\n          <DATE>" + ts.formatDateForTally(trip.CustomerBillingRaisedDate, trip.OpenTripDateTime) + "</DATE>")
@@ -497,6 +505,8 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 		}
 
 		if vendorTotal > 0 && trip.VendorPaidDate != "" {
+			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
+			ts.l.Info("Creating payment voucher for vendor: ", vendorName, ", amount: ", vendorTotal, ", date: ", trip.VendorPaidDate)
 			voucherCount++
 			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Payment\" ACTION=\"Create\">")
 			xml.WriteString("\n          <DATE>" + ts.formatDateForTally(trip.VendorPaidDate, trip.OpenTripDateTime) + "</DATE>")
@@ -508,9 +518,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			xml.WriteString("\n          <VOUCHERTYPE>Payment</VOUCHERTYPE>")
 
 			// Use consistent vendor name formatting (same as ledger creation)
-			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
 			escapedVendorName := ts.escapeXML(vendorName)
-			ts.l.Info("Using vendor name in voucher: ", escapedVendorName, " (original: ", vendorName, ")")
 
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
