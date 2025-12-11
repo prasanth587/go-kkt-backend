@@ -56,7 +56,6 @@ func (lr *LRReceipt) CreateLRReceipt(lrReq dtos.LRReceiptReq) (*dtos.Messge, err
 		return nil, errT
 	}
 
-
 	lr.l.Info("LR Receipt created successfully! : ", lrReq.TripSheetNum)
 
 	response := dtos.Messge{}
