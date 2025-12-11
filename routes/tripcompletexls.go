@@ -18,7 +18,8 @@ import (
 func tripcompleteXLS(router *httprouter.Router, recoverHandler alice.Chain) {
 	router.GET("/v1/:orgId/trip/sheets/xls", wrapHandler(recoverHandler.ThenFunc(getTripSheetsList)))
 	router.GET("/v1/:orgId/downlaod/trip/sheet", wrapHandler(recoverHandler.ThenFunc(downloadTripsByIds)))
-	router.GET("/v1/:orgId/download/trip/sheet/tally", wrapHandler(recoverHandler.ThenFunc(downloadTripsByIdsTally)))
+	// Tally export route removed
+	// router.GET("/v1/:orgId/download/trip/sheet/tally", wrapHandler(recoverHandler.ThenFunc(downloadTripsByIdsTally)))
 	router.POST("/v1/update/customer/invoice/xls", wrapHandler(recoverHandler.ThenFunc(updateCustomerPaymantInfoXls)))
 }
 
