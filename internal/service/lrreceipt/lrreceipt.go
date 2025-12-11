@@ -87,8 +87,6 @@ func (lr *LRReceipt) UpdateLR(lrId int64, updateLRReq dtos.LRReceiptUpdateReq) (
 		return nil, err1
 	}
 
-	// }
-
 	lr.l.Info("LR updated successfully! : ", lrId, updateLRReq.LRNumber, updateLRReq.TripSheetNum)
 
 	response := dtos.Messge{}
