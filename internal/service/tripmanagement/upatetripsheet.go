@@ -7,7 +7,7 @@ import (
 
 	"go-transport-hub/constant"
 	"go-transport-hub/dtos"
-	"go-transport-hub/internal/service/notification"
+	// "go-transport-hub/internal/service/notification" // Temporarily disabled
 	"go-transport-hub/utils"
 )
 
@@ -31,7 +31,7 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 
 	// }
 
-	oldStatus := tripSheetInfo.LoadStatus
+	// oldStatus := tripSheetInfo.LoadStatus // Temporarily disabled (was used for notifications)
 	tripSheetUpdateReq.TripSubmittedDate = tripSheetInfo.TripSubmittedDate
 	tripSheetUpdateReq.LoadStatus = tripSheetInfo.LoadStatus
 	if tripSheetInfo.LoadStatus == constant.STATUS_CREATED {
