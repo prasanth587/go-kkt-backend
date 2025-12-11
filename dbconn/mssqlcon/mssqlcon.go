@@ -167,6 +167,37 @@ func CreateTable(db *sql.DB) {
 	createAppConfig(db)
 	createEmployeeAttendance(db)
 	createEmployeeAttendanceEntry(db)
+	createNotifications(db)
+}
+
+func createNotifications(db *sql.DB) {
+	notificationTable, err := db.Prepare(`CREATE TABLE IF NOT EXISTS 
+		notifications (
+			notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			org_id INT UNSIGNED NOT NULL,
+			CONSTRAINT fky_notification_org FOREIGN KEY (org_id) REFERENCES organisation(org_id),
+			user_id INT UNSIGNED,
+			CONSTRAINT fky_notification_user FOREIGN KEY (user_id) REFERENCES user_login(id),
+			notification_type VARCHAR(50) NOT NULL,
+			title VARCHAR(255) NOT NULL,
+			message TEXT NOT NULL,
+			related_entity_type VARCHAR(50),
+			related_entity_id INT UNSIGNED,
+			is_read BOOLEAN DEFAULT FALSE,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (notification_id),
+			INDEX idx_org_user (org_id, user_id),
+			INDEX idx_is_read (is_read),
+			INDEX idx_created_at (created_at)
+		) ENGINE=InnoDB;`)
+	if err != nil {
+		lg.Println("ERROR: notifications table prepare: ", err.Error())
+		return
+	}
+	_, err = notificationTable.Exec()
+	if err != nil {
+		lg.Println("ERROR: notifications table: ", err.Error())
+	}
 }
 
 func CreateDefaultValues(db *sql.DB) {

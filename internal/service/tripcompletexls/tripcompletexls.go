@@ -506,18 +506,18 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 
 		if vendorTotal > 0 && trip.VendorPaidDate != "" {
 			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
-			
+
 			// Skip if vendor name is empty
 			if vendorName == "" {
 				ts.l.Error("Skipping payment voucher - vendor name is empty for trip: ", trip.TripSheetNum, ", VendorID: ", trip.VendorID, ", VendorName: ", trip.VendorName, ", VendorCode: ", trip.VendorCode)
 				continue
 			}
-			
+
 			// Verify vendor ledger was created (should have been collected in first pass)
 			if !vendorMap[vendorName] {
 				ts.l.Error("WARNING: Vendor ledger not collected for: ", vendorName, " in trip: ", trip.TripSheetNum)
 			}
-			
+
 			ts.l.Info("Creating payment voucher for vendor: ", vendorName, ", amount: ", vendorTotal, ", date: ", trip.VendorPaidDate)
 			voucherCount++
 			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Payment\" ACTION=\"Create\">")

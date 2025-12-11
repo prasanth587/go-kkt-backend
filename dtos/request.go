@@ -704,6 +704,7 @@ type TripSheet struct {
 
 	VehicleSizeID    int64   `json:"vehicle_size_id"`
 	VendorCommission float64 `json:"vendor_commission"`
+	OrgID            int64   `json:"org_id"`
 }
 
 type TripSheetRes struct {

@@ -17,6 +17,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/utils"
 )
 
@@ -87,6 +88,13 @@ func (cus *CustomerObj) CreateCustomerV1(customerReq dtos.CustomersReq) (*dtos.M
 	}
 
 	cus.l.Info("Customer created successfully! : ", customerId, customerReq.CustomerName)
+
+	// Send notification for customer creation
+	notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
+	if err := notificationSvc.NotifyCustomerCreated(int64(customerReq.OrgId), customerId, customerReq.CustomerName); err != nil {
+		cus.l.Error("ERROR: Failed to send customer creation notification: ", err)
+		// Don't fail the request if notification fails
+	}
 
 	if len(customerReq.ContactInfo) != 0 {
 		for _, contactInfo := range customerReq.ContactInfo {
@@ -273,6 +281,13 @@ func (cus *CustomerObj) UpdateCustomerV1(customerId int64, customerReq dtos.Cust
 				return nil, err1
 			}
 		}
+	}
+
+	// Send notification for customer update
+	notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
+	if err := notificationSvc.NotifyCustomerUpdated(int64(customerInfo.OrgId), customerId, customerReq.CustomerName); err != nil {
+		cus.l.Error("ERROR: Failed to send customer update notification: ", err)
+		// Don't fail the request if notification fails
 	}
 
 	cus.l.Info("Customer updated successfully! : ", customerReq.CustomerName)
@@ -484,7 +499,7 @@ func (cus *CustomerObj) UploadCustomerImagesV1(customerId int64, aggReq dtos.Cus
 		cus.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		cus.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)

@@ -12,6 +12,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 )
 
 type LoadingPointObj struct {
@@ -79,6 +80,23 @@ func (lp *LoadingPointObj) CreateLoadingPoint(loadingPointReq dtos.LoadingPointR
 	if err1 != nil {
 		lp.l.Error("loadingpoint not saved ", loadingPointReq.CityCode, err1)
 		return nil, err1
+	}
+
+	// Get loading point ID after creation for notification
+	loadingPoints, errG := lp.loadingPointDao.GetLoadingPoints(loadingPointReq.OrgID, 1, 0, "")
+	if errG == nil && loadingPoints != nil && len(*loadingPoints) > 0 {
+		// Find the newly created loading point by city code
+		for _, lpItem := range *loadingPoints {
+			if lpItem.CityCode == loadingPointReq.CityCode {
+				// Send notification for loading point creation
+				notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
+				if err := notificationSvc.NotifyLoadingPointCreated(int64(loadingPointReq.OrgID), lpItem.LoadingPointID, loadingPointReq.CityName); err != nil {
+					lp.l.Error("ERROR: Failed to send loading point creation notification: ", err)
+					// Don't fail the request if notification fails
+				}
+				break
+			}
+		}
 	}
 
 	lp.l.Info("Loading/unloading point created successfully! : ", loadingPointReq.CityCode)
@@ -156,6 +174,13 @@ func (lp *LoadingPointObj) UpdateLoadingPoint(loadingPointId int64, loadingPoint
 	if err1 != nil {
 		lp.l.Error("loadingpoint not updated ", loadingPointReq.CityName, err1)
 		return nil, err1
+	}
+
+	// Send notification for loading point update
+	notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
+	if err := notificationSvc.NotifyLoadingPointUpdated(int64(loadingpointInfo.OrgID), loadingPointId, loadingPointReq.CityName); err != nil {
+		lp.l.Error("ERROR: Failed to send loading point update notification: ", err)
+		// Don't fail the request if notification fails
 	}
 
 	lp.l.Info("loadingpoint updated successfully! : ", loadingPointReq.CityName)

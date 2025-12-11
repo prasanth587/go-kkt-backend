@@ -598,7 +598,7 @@ func (ts *TripSheetObj) GetTripSheet(tripSheetId int64) (*dtos.TripSheet, error)
             vendor_debit_amount, vendor_balance_amount, pod_received,customer_per_load_hire, customer_running_km, customer_per_km_price, customer_placed_vehicle_size,
 			customer_load_cancelled, vendor_paid_by, vendor_load_unload_amount, vendor_halting_days,
 			vendor_halting_paid, vendor_extra_delivery, load_status, customer_reported_date_time_for_halting_calc, vendor_break_down,
-			trip_submitted_date, trip_closed_date, trip_delivered_date, trip_completed_date, vendor_monul,vendor_commission, vehicle_size_id
+			trip_submitted_date, trip_closed_date, trip_delivered_date, trip_completed_date, vendor_monul,vendor_commission, vehicle_size_id, org_id
         FROM trip_sheet_header 
         WHERE trip_sheet_id = '%d';`, tripSheetId)
 
@@ -615,7 +615,7 @@ func (ts *TripSheetObj) GetTripSheet(tripSheetId int64) (*dtos.TripSheet, error)
 		customerPlacedVehicleSize, customerLoadCancelled, vendorPaidBy, loadStatus,
 		customerReportedDateTimeForHaltingCalc, tripSubmittedDate, tripClosedDate, tripDeliveredDate, tripCompletedDate, vendorBreakDown sql.NullString
 
-		branchID, customerID, vendorID, podRequired, podReceived, vehicleSizeId sql.NullInt64
+		branchID, customerID, vendorID, podRequired, podReceived, vehicleSizeId, orgID sql.NullInt64
 		customerBaseRate, customerKmCost, customerToll, customerExtraHours, customerExtraKm, customerTotalHire, customerDebitAmount,
 		vendorBaseRate, vendorKmCost, vendorToll, vendorTotalHire, vendorAdvance, vendorDebitAmount, vendorBalanceAmount,
 		customerPerLoadHire, customerRunningKM, customerPerKMPrice, vendorLoadUnLoadAmount, vendorHaltingDays,
@@ -682,6 +682,7 @@ func (ts *TripSheetObj) GetTripSheet(tripSheetId int64) (*dtos.TripSheet, error)
 		&vendorMonul,
 		&vendorCommission,
 		&vehicleSizeId,
+		&orgID,
 	)
 
 	if err != nil {

@@ -14,6 +14,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/utils"
 )
 
@@ -104,6 +105,13 @@ func (trp *TripSheetObj) CreateTripSheetHeader(tripSheetReq dtos.CreateTripSheet
 			trp.l.Error("ERROR: SaveTripSheetUnLoadingPoint", errD)
 			return nil, errD
 		}
+	}
+
+	// Send notification for trip sheet creation
+	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+	if err := notificationSvc.NotifyTripSheetCreated(int64(tripSheetReq.OrgId), tripSheetId, tripSheetReq.TripSheetNum, tripSheetReq.UserLoginId); err != nil {
+		trp.l.Error("ERROR: Failed to send trip creation notification: ", err)
+		// Don't fail the request if notification fails
 	}
 
 	response := dtos.Messge{}

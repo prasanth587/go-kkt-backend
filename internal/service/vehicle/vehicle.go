@@ -285,7 +285,7 @@ func (ul *VehicleObj) UploadVehicleImages(vehicleId int64, imageFor string, file
 		ul.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		ul.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)
@@ -352,6 +352,9 @@ func (vh *VehicleObj) CreateVehicleSizeTypes(vehicleObj dtos.VehicleSizeType) (*
 		return nil, err1
 	}
 
+	// Note: Vehicle size notifications skipped as orgId is not available in VehicleSizeType DTO
+	// Vehicle size types appear to be global, not org-specific
+
 	vh.l.Info("Vehicle size type created successfully! : ", vehicleObj.VehicleSize, vehicleObj.VehicleType)
 
 	roleResponse := dtos.Messge{}
@@ -412,6 +415,9 @@ func (vh *VehicleObj) UpdateVehicleSizeType(vehicleSizeId int64, vehicleObj dtos
 		vh.l.Error("UpdateVehicleSizeType not updated ", vehicleObj.VehicleSize, err1)
 		return nil, err1
 	}
+
+	// Note: Vehicle size notifications skipped as orgId is not available
+	// Vehicle size types appear to be global, not org-specific
 
 	vh.l.Info("Vehicle size type updated successfully! : ", vehicleSizeId, vehicleObj.VehicleSize)
 

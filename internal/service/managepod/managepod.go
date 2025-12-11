@@ -18,6 +18,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/utils"
 )
 
@@ -59,6 +60,13 @@ func (mp *ManagePod) CreateManagePod(podReq dtos.ManagePodReq) (*dtos.Messge, er
 	if errT != nil {
 		mp.l.Error("ERROR: UpdateTripSheetStatus ", errT)
 		return nil, errT
+	}
+
+	// Send notification for POD submission
+	notificationSvc := notification.New(mp.l, mp.dbConnMSSQL)
+	if err := notificationSvc.NotifyPODSubmitted(int64(podReq.OrgId), podReq.TripSheetID, podReq.TripSheetNum); err != nil {
+		mp.l.Error("ERROR: Failed to send POD submission notification: ", err)
+		// Don't fail the request if notification fails
 	}
 
 	mp.l.Info("POD created successfully! : ", podReq.TripSheetNum)
@@ -286,7 +294,7 @@ func (ul *ManagePod) UploadPodDoc(tripSheetId int64, imageFor string, file multi
 		ul.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		ul.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)

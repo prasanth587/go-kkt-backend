@@ -18,6 +18,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/utils"
 )
 
@@ -354,6 +355,13 @@ func (vh *VendorObj) UpdateVendorV1(vendorId int64, vendorReg dtos.VendorV1Updat
 				return nil, err1
 			}
 		}
+	}
+
+	// Send notification for vendor update
+	notificationSvc := notification.New(vh.l, vh.dbConnMSSQL)
+	if err := notificationSvc.NotifyVendorUpdated(int64(vendorReg.OrgID), vendorId, vendorReg.VendorName); err != nil {
+		vh.l.Error("ERROR: Failed to send vendor update notification: ", err)
+		// Don't fail the request if notification fails
 	}
 
 	vh.l.Info("Vendor updated successfully! : ", vendorReg.VendorName)

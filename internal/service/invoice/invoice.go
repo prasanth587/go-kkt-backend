@@ -16,6 +16,7 @@ import (
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
 	"go-transport-hub/internal/service/commonsvc"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/internal/service/tripcompletexls"
 	"go-transport-hub/utils"
 )
@@ -82,6 +83,28 @@ func (trp *InvoiceObj) CancelDraftInvoice(invoiceId int64) (*dtos.Messge, error)
 		return nil, errU
 	}
 
+	// Get invoice info for notification
+	invoiceRes, errU := trp.invoiceDao.GetInvoiceInfo(invoiceId)
+	if errU == nil && invoiceRes != nil {
+		// Get orgId from customer
+		if invoiceRes.CustomerId > 0 {
+			customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
+			customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
+			if errC == nil && customer != nil {
+				// Send notification for invoice cancellation
+				notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+				invoiceNo := invoiceRes.InvoiceNumber
+				if invoiceNo == "" {
+					invoiceNo = fmt.Sprintf("Draft Invoice #%d", invoiceId)
+				}
+				if err := notificationSvc.NotifyInvoiceCancelled(int64(customer.OrgId), invoiceId, invoiceNo); err != nil {
+					trp.l.Error("ERROR: Failed to send invoice cancellation notification: ", err)
+					// Don't fail the request if notification fails
+				}
+			}
+		}
+	}
+
 	trp.l.Info("DraftInvoice cancelled successfully... ", invoiceId)
 	roleResponse := dtos.Messge{}
 	roleResponse.Message = "Draft Invoice cancelled successfully!"
@@ -123,6 +146,19 @@ func (trp *InvoiceObj) UpdateInvoiceNumber(invoiceId int64, invoiceNumber string
 		} else {
 			trp.l.Error("ERROR: Trips are not found for the invoice", invoiceId, invoiceNumber)
 			return nil, errors.New("trips are not found for the invoice")
+		}
+	}
+
+	// Send notification for invoice number update
+	if invoiceRes.CustomerId > 0 {
+		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
+		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
+		if errC == nil && customer != nil {
+			notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+			if err := notificationSvc.NotifyInvoiceNumberUpdated(int64(customer.OrgId), invoiceId, invoiceNumber); err != nil {
+				trp.l.Error("ERROR: Failed to send invoice number update notification: ", err)
+				// Don't fail the request if notification fails
+			}
 		}
 	}
 
@@ -174,6 +210,19 @@ func (trp *InvoiceObj) UpdateInvoicePaid(invoiceId int64, invoicePaidDate, trans
 		} else {
 			trp.l.Error("ERROR: Trips are not found for the invoice", invoiceId, invoiceRes.InvoiceNumber)
 			return nil, errors.New("trips are not found for the invoice")
+		}
+	}
+
+	// Send notification for invoice paid
+	if invoiceRes.CustomerId > 0 {
+		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
+		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
+		if errC == nil && customer != nil {
+			notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+			if err := notificationSvc.NotifyInvoicePaid(int64(customer.OrgId), invoiceId, invoiceRes.InvoiceNumber, invoiceRes.InvoiceAmount); err != nil {
+				trp.l.Error("ERROR: Failed to send invoice paid notification: ", err)
+				// Don't fail the request if notification fails
+			}
 		}
 	}
 

@@ -17,6 +17,7 @@ import (
 	"go-transport-hub/dtos"
 	"go-transport-hub/dtos/schema"
 	"go-transport-hub/internal/daos"
+	"go-transport-hub/internal/service/notification"
 	"go-transport-hub/utils"
 )
 
@@ -306,6 +307,13 @@ func (ul *EmpRoleObj) UpdateEmployee(employeeId int64, employeeReq dtos.UpdateEm
 		}
 	}
 
+	// Send notification for employee update
+	notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
+	if err := notificationSvc.NotifyEmployeeUpdated(int64(emplopleeInfo.OrgID), employeeId, employeeReq.FirstName); err != nil {
+		ul.l.Error("ERROR: Failed to send employee update notification: ", err)
+		// Don't fail the request if notification fails
+	}
+
 	ul.l.Info("employee updated successfully!: ", emplopleeInfo.EmpId, employeeReq.FirstName)
 
 	employeeUpdateRes := dtos.EmployeeUpdateResponse{}
@@ -460,6 +468,13 @@ func (ul *EmpRoleObj) UpdateEmployeeRole(empRole dtos.EmpRoleUpdate, roleId int6
 		}
 	}
 
+	// Send notification for role update
+	notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
+	if err := notificationSvc.NotifyRoleUpdated(int64(empRole.OrgId), roleId, empRole.RoleName); err != nil {
+		ul.l.Error("ERROR: Failed to send role update notification: ", err)
+		// Don't fail the request if notification fails
+	}
+
 	roleResponse := dtos.EmpRoleResponse{}
 	roleResponse.Message = fmt.Sprintf("Role updated successfully : %s", empRole.RoleName)
 	roleResponse.RoleName = empRole.RoleName
@@ -520,7 +535,7 @@ func (vo *EmpRoleObj) UploadEmployeeProfile(employeeId int64, file multipart.Fil
 		vo.l.Error("ERROR: MkdirAll failed for path: ", fullPath, " error: ", err)
 		return nil, fmt.Errorf("failed to create directory %s: %w", fullPath, err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		vo.l.Error("ERROR: Directory does not exist after MkdirAll: ", fullPath)

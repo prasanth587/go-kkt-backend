@@ -73,6 +73,7 @@ func RouterConfig() http.Handler {
 	attendanceEmp(router, recoverHandler)
 	paymentAndInvoice(router, recoverHandler)
 	invoiceHub(router, recoverHandler)
+	notificationRoutes(router, recoverHandler)
 
 	//commonAPIs
 	router.GET("/view/v1/image", wrapHandler(recoverHandler.ThenFunc(ViweImage)))
