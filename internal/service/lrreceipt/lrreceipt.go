@@ -58,16 +58,16 @@ func (lr *LRReceipt) CreateLRReceipt(lrReq dtos.LRReceiptReq) (*dtos.Messge, err
 
 	// Get LR ID after creation for notification
 	lrRecords, _, errG := lr.lrReceiptDao.GetLRRecords(lrReq.OrgID, fmt.Sprintf("WHERE lr_number = '%s'", lrReq.LRNumber), 1, 0)
-	if errG == nil && lrRecords != nil && len(*lrRecords) > 0 {
-		lrRecord := (*lrRecords)[0]
-		// Send notification for LR receipt creation
-		// Temporarily disabled
-		// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
-		// if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
-		// 	lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
-		// 	// Don't fail the request if notification fails
-		// }
-	}
+	// Temporarily disabled - notification code
+	// if errG == nil && lrRecords != nil && len(*lrRecords) > 0 {
+	// 	lrRecord := (*lrRecords)[0]
+	// 	// Send notification for LR receipt creation
+	// 	notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
+	// 	if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
+	// 		lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
+	// 		// Don't fail the request if notification fails
+	// 	}
+	// }
 
 	lr.l.Info("LR Receipt created successfully! : ", lrReq.TripSheetNum)
 
