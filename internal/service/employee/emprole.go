@@ -308,9 +308,10 @@ func (ul *EmpRoleObj) UpdateEmployee(employeeId int64, employeeReq dtos.UpdateEm
 	}
 
 	// Send notification for employee update
-	notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
-	if err := notificationSvc.NotifyEmployeeUpdated(int64(emplopleeInfo.OrgID), employeeId, employeeReq.FirstName); err != nil {
-		ul.l.Error("ERROR: Failed to send employee update notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
+	// if err := notificationSvc.NotifyEmployeeUpdated(int64(emplopleeInfo.OrgID), employeeId, employeeReq.FirstName); err != nil {
+	// 	ul.l.Error("ERROR: Failed to send employee update notification: ", err)
 		// Don't fail the request if notification fails
 	}
 
@@ -469,9 +470,10 @@ func (ul *EmpRoleObj) UpdateEmployeeRole(empRole dtos.EmpRoleUpdate, roleId int6
 	}
 
 	// Send notification for role update
-	notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
-	if err := notificationSvc.NotifyRoleUpdated(int64(empRole.OrgId), roleId, empRole.RoleName); err != nil {
-		ul.l.Error("ERROR: Failed to send role update notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
+	// if err := notificationSvc.NotifyRoleUpdated(int64(empRole.OrgId), roleId, empRole.RoleName); err != nil {
+	// 	ul.l.Error("ERROR: Failed to send role update notification: ", err)
 		// Don't fail the request if notification fails
 	}
 

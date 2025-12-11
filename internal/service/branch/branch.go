@@ -71,9 +71,10 @@ func (br *BranchObj) CreateBranch(branchReq dtos.BranchReq) (*dtos.Messge, error
 		for _, branch := range *branches {
 			if branch.BranchName == branchReq.BranchName && branch.BranchCode == branchReq.BranchCode {
 				// Send notification for branch creation
-				notificationSvc := notification.New(br.l, br.dbConnMSSQL)
-				if err := notificationSvc.NotifyBranchCreated(int64(branchReq.OrgID), branch.BranchId, branchReq.BranchName); err != nil {
-					br.l.Error("ERROR: Failed to send branch creation notification: ", err)
+				// Temporarily disabled
+				// notificationSvc := notification.New(br.l, br.dbConnMSSQL)
+				// if err := notificationSvc.NotifyBranchCreated(int64(branchReq.OrgID), branch.BranchId, branchReq.BranchName); err != nil {
+				// 	br.l.Error("ERROR: Failed to send branch creation notification: ", err)
 					// Don't fail the request if notification fails
 				}
 				break
@@ -140,9 +141,10 @@ func (br *BranchObj) UpdateBranch(branchId int64, branchReq dtos.BranchUpdate) (
 	}
 
 	// Send notification for branch update
-	notificationSvc := notification.New(br.l, br.dbConnMSSQL)
-	if err := notificationSvc.NotifyBranchUpdated(int64(branchInfo.OrgID), branchId, branchReq.BranchName); err != nil {
-		br.l.Error("ERROR: Failed to send branch update notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(br.l, br.dbConnMSSQL)
+	// if err := notificationSvc.NotifyBranchUpdated(int64(branchInfo.OrgID), branchId, branchReq.BranchName); err != nil {
+	// 	br.l.Error("ERROR: Failed to send branch update notification: ", err)
 		// Don't fail the request if notification fails
 	}
 

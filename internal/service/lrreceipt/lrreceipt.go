@@ -61,9 +61,10 @@ func (lr *LRReceipt) CreateLRReceipt(lrReq dtos.LRReceiptReq) (*dtos.Messge, err
 	if errG == nil && lrRecords != nil && len(*lrRecords) > 0 {
 		lrRecord := (*lrRecords)[0]
 		// Send notification for LR receipt creation
-		notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
-		if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
-			lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
+		// Temporarily disabled
+		// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
+		// if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
+		// 	lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
 			// Don't fail the request if notification fails
 		}
 	}
@@ -99,9 +100,10 @@ func (lr *LRReceipt) UpdateLR(lrId int64, updateLRReq dtos.LRReceiptUpdateReq) (
 	}
 
 	// Send notification for LR receipt update
-	notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
-	if err := notificationSvc.NotifyLRReceiptUpdated(int64(lrInfo.OrgID), lrId, updateLRReq.LRNumber); err != nil {
-		lr.l.Error("ERROR: Failed to send LR receipt update notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
+	// if err := notificationSvc.NotifyLRReceiptUpdated(int64(lrInfo.OrgID), lrId, updateLRReq.LRNumber); err != nil {
+	// 	lr.l.Error("ERROR: Failed to send LR receipt update notification: ", err)
 		// Don't fail the request if notification fails
 	}
 

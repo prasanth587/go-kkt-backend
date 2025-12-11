@@ -91,14 +91,15 @@ func (trp *InvoiceObj) CancelDraftInvoice(invoiceId int64) (*dtos.Messge, error)
 			customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 			customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 			if errC == nil && customer != nil {
-				// Send notification for invoice cancellation
-				notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-				invoiceNo := invoiceRes.InvoiceNumber
-				if invoiceNo == "" {
-					invoiceNo = fmt.Sprintf("Draft Invoice #%d", invoiceId)
-				}
-				if err := notificationSvc.NotifyInvoiceCancelled(int64(customer.OrgId), invoiceId, invoiceNo); err != nil {
-					trp.l.Error("ERROR: Failed to send invoice cancellation notification: ", err)
+			// Send notification for invoice cancellation
+			// Temporarily disabled
+			// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+			// invoiceNo := invoiceRes.InvoiceNumber
+			// if invoiceNo == "" {
+			// 	invoiceNo = fmt.Sprintf("Draft Invoice #%d", invoiceId)
+			// }
+			// if err := notificationSvc.NotifyInvoiceCancelled(int64(customer.OrgId), invoiceId, invoiceNo); err != nil {
+			// 	trp.l.Error("ERROR: Failed to send invoice cancellation notification: ", err)
 					// Don't fail the request if notification fails
 				}
 			}
@@ -154,8 +155,9 @@ func (trp *InvoiceObj) UpdateInvoiceNumber(invoiceId int64, invoiceNumber string
 		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 		if errC == nil && customer != nil {
-			notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-			if err := notificationSvc.NotifyInvoiceNumberUpdated(int64(customer.OrgId), invoiceId, invoiceNumber); err != nil {
+		// Temporarily disabled
+		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+		// if err := notificationSvc.NotifyInvoiceNumberUpdated(int64(customer.OrgId), invoiceId, invoiceNumber); err != nil {
 				trp.l.Error("ERROR: Failed to send invoice number update notification: ", err)
 				// Don't fail the request if notification fails
 			}
@@ -218,8 +220,9 @@ func (trp *InvoiceObj) UpdateInvoicePaid(invoiceId int64, invoicePaidDate, trans
 		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 		if errC == nil && customer != nil {
-			notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-			if err := notificationSvc.NotifyInvoicePaid(int64(customer.OrgId), invoiceId, invoiceRes.InvoiceNumber, invoiceRes.InvoiceAmount); err != nil {
+		// Temporarily disabled
+		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+		// if err := notificationSvc.NotifyInvoicePaid(int64(customer.OrgId), invoiceId, invoiceRes.InvoiceNumber, invoiceRes.InvoiceAmount); err != nil {
 				trp.l.Error("ERROR: Failed to send invoice paid notification: ", err)
 				// Don't fail the request if notification fails
 			}

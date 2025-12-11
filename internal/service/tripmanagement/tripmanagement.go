@@ -108,11 +108,12 @@ func (trp *TripSheetObj) CreateTripSheetHeader(tripSheetReq dtos.CreateTripSheet
 	}
 
 	// Send notification for trip sheet creation
-	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-	if err := notificationSvc.NotifyTripSheetCreated(int64(tripSheetReq.OrgId), tripSheetId, tripSheetReq.TripSheetNum, tripSheetReq.UserLoginId); err != nil {
-		trp.l.Error("ERROR: Failed to send trip creation notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// Temporarily disabled
+	// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+	// if err := notificationSvc.NotifyTripSheetCreated(int64(tripSheetReq.OrgId), tripSheetId, tripSheetReq.TripSheetNum, tripSheetReq.UserLoginId); err != nil {
+	// 	trp.l.Error("ERROR: Failed to send trip creation notification: ", err)
+	// 	// Don't fail the request if notification fails
+	// }
 
 	response := dtos.Messge{}
 	response.Message = fmt.Sprintf("Trip Sheet successfully: %s", tripSheetReq.TripSheetNum)

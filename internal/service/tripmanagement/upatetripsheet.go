@@ -104,23 +104,24 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 	}
 
 	// Send notification if status changed
-	if oldStatus != tripSheetUpdateReq.LoadStatus {
-		notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-		var err error
+	// Temporarily disabled
+	// if oldStatus != tripSheetUpdateReq.LoadStatus {
+	// 	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+	// 	var err error
 
-		switch tripSheetUpdateReq.LoadStatus {
-		case constant.STATUS_SUBMITTED:
-			err = notificationSvc.NotifyTripSheetInTransit(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
-		case constant.STATUS_DELIVERED:
-			err = notificationSvc.NotifyTripSheetDelivered(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
-		case constant.STATUS_CLOSED:
-			err = notificationSvc.NotifyTripSheetClosed(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
-		case constant.STATUS_COMPLETED:
-			err = notificationSvc.NotifyTripSheetCompleted(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
-		default:
-			// Generic status change notification
-			err = notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, oldStatus, tripSheetUpdateReq.LoadStatus)
-		}
+	// 	switch tripSheetUpdateReq.LoadStatus {
+	// 	case constant.STATUS_SUBMITTED:
+	// 		err = notificationSvc.NotifyTripSheetInTransit(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
+	// 	case constant.STATUS_DELIVERED:
+	// 		err = notificationSvc.NotifyTripSheetDelivered(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
+	// 	case constant.STATUS_CLOSED:
+	// 		err = notificationSvc.NotifyTripSheetClosed(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
+	// 	case constant.STATUS_COMPLETED:
+	// 		err = notificationSvc.NotifyTripSheetCompleted(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
+	// 	default:
+	// 		// Generic status change notification
+	// 		err = notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, oldStatus, tripSheetUpdateReq.LoadStatus)
+	// 	}
 
 		if err != nil {
 			trp.l.Error("ERROR: Failed to send status change notification: ", err)

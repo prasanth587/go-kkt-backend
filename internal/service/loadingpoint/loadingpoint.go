@@ -89,9 +89,10 @@ func (lp *LoadingPointObj) CreateLoadingPoint(loadingPointReq dtos.LoadingPointR
 		for _, lpItem := range *loadingPoints {
 			if lpItem.CityCode == loadingPointReq.CityCode {
 				// Send notification for loading point creation
-				notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
-				if err := notificationSvc.NotifyLoadingPointCreated(int64(loadingPointReq.OrgID), lpItem.LoadingPointID, loadingPointReq.CityName); err != nil {
-					lp.l.Error("ERROR: Failed to send loading point creation notification: ", err)
+				// Temporarily disabled
+				// notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
+				// if err := notificationSvc.NotifyLoadingPointCreated(int64(loadingPointReq.OrgID), lpItem.LoadingPointID, loadingPointReq.CityName); err != nil {
+				// 	lp.l.Error("ERROR: Failed to send loading point creation notification: ", err)
 					// Don't fail the request if notification fails
 				}
 				break
@@ -177,9 +178,10 @@ func (lp *LoadingPointObj) UpdateLoadingPoint(loadingPointId int64, loadingPoint
 	}
 
 	// Send notification for loading point update
-	notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
-	if err := notificationSvc.NotifyLoadingPointUpdated(int64(loadingpointInfo.OrgID), loadingPointId, loadingPointReq.CityName); err != nil {
-		lp.l.Error("ERROR: Failed to send loading point update notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
+	// if err := notificationSvc.NotifyLoadingPointUpdated(int64(loadingpointInfo.OrgID), loadingPointId, loadingPointReq.CityName); err != nil {
+	// 	lp.l.Error("ERROR: Failed to send loading point update notification: ", err)
 		// Don't fail the request if notification fails
 	}
 

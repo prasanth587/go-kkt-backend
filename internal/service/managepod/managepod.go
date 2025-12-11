@@ -63,9 +63,10 @@ func (mp *ManagePod) CreateManagePod(podReq dtos.ManagePodReq) (*dtos.Messge, er
 	}
 
 	// Send notification for POD submission
-	notificationSvc := notification.New(mp.l, mp.dbConnMSSQL)
-	if err := notificationSvc.NotifyPODSubmitted(int64(podReq.OrgId), podReq.TripSheetID, podReq.TripSheetNum); err != nil {
-		mp.l.Error("ERROR: Failed to send POD submission notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(mp.l, mp.dbConnMSSQL)
+	// if err := notificationSvc.NotifyPODSubmitted(int64(podReq.OrgId), podReq.TripSheetID, podReq.TripSheetNum); err != nil {
+	// 	mp.l.Error("ERROR: Failed to send POD submission notification: ", err)
 		// Don't fail the request if notification fails
 	}
 

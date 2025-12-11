@@ -26,15 +26,16 @@ func (trp *TripSheetObj) CancelTripSheet(tripSheetId int64) (*dtos.Messge, error
 	}
 
 	// Get trip sheet info for notification
-	tripSheetInfo, errV := trp.tripSheetDao.GetTripSheet(tripSheetId)
-	if errV == nil {
-		// Send notification for trip cancellation
-		notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-		if err := notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, tripSheetInfo.LoadStatus, constant.STATUS_CANCELLED); err != nil {
-			trp.l.Error("ERROR: Failed to send cancellation notification: ", err)
-			// Don't fail the request if notification fails
-		}
-	}
+	// Temporarily disabled
+	// tripSheetInfo, errV := trp.tripSheetDao.GetTripSheet(tripSheetId)
+	// if errV == nil {
+	// 	// Send notification for trip cancellation
+	// 	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
+	// 	if err := notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, tripSheetInfo.LoadStatus, constant.STATUS_CANCELLED); err != nil {
+	// 		trp.l.Error("ERROR: Failed to send cancellation notification: ", err)
+	// 		// Don't fail the request if notification fails
+	// 	}
+	// }
 
 	trp.l.Info("Trip cancelled successfully... ", tripSheetId)
 	roleResponse := dtos.Messge{}

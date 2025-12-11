@@ -90,9 +90,10 @@ func (cus *CustomerObj) CreateCustomerV1(customerReq dtos.CustomersReq) (*dtos.M
 	cus.l.Info("Customer created successfully! : ", customerId, customerReq.CustomerName)
 
 	// Send notification for customer creation
-	notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
-	if err := notificationSvc.NotifyCustomerCreated(int64(customerReq.OrgId), customerId, customerReq.CustomerName); err != nil {
-		cus.l.Error("ERROR: Failed to send customer creation notification: ", err)
+	// Temporarily disabled
+	// notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
+	// if err := notificationSvc.NotifyCustomerCreated(int64(customerReq.OrgId), customerId, customerReq.CustomerName); err != nil {
+	// 	cus.l.Error("ERROR: Failed to send customer creation notification: ", err)
 		// Don't fail the request if notification fails
 	}
 
@@ -284,8 +285,9 @@ func (cus *CustomerObj) UpdateCustomerV1(customerId int64, customerReq dtos.Cust
 	}
 
 	// Send notification for customer update
-	notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
-	if err := notificationSvc.NotifyCustomerUpdated(int64(customerInfo.OrgId), customerId, customerReq.CustomerName); err != nil {
+	// Temporarily disabled
+	// notificationSvc := notification.New(cus.l, cus.dbConnMSSQL)
+	// if err := notificationSvc.NotifyCustomerUpdated(int64(customerInfo.OrgId), customerId, customerReq.CustomerName); err != nil {
 		cus.l.Error("ERROR: Failed to send customer update notification: ", err)
 		// Don't fail the request if notification fails
 	}
