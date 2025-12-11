@@ -366,7 +366,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n    <VERSION>1</VERSION>")
 	xml.WriteString("\n    <TALLYREQUEST>Import</TALLYREQUEST>")
 	xml.WriteString("\n    <TYPE>Data</TYPE>")
-	xml.WriteString("\n    <ID>All Masters</ID>")
+	xml.WriteString("\n    <ID>Vouchers</ID>")
 	xml.WriteString("\n  </HEADER>")
 	xml.WriteString("\n  <BODY>")
 	xml.WriteString("\n    <DESC>")
@@ -403,12 +403,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 		}
 
 		if vendorTotal > 0 && trip.VendorPaidDate != "" {
-			vendorName := trip.VendorName
-			if vendorName == "" {
-				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, fmt.Sprintf("Vendor_%d", trip.VendorID))
-			} else if trip.VendorCode != "" {
-				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, vendorName)
-			}
+			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
 			if vendorName != "" {
 				vendorMap[vendorName] = true
 			}
@@ -503,13 +498,8 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			xml.WriteString("</NARRATION>")
 			xml.WriteString("\n          <VOUCHERTYPE>Payment</VOUCHERTYPE>")
 
-			// Use actual vendor name, or fallback to Vendor_[ID] if name is empty
-			vendorName := trip.VendorName
-			if vendorName == "" {
-				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, fmt.Sprintf("Vendor_%d", trip.VendorID))
-			} else if trip.VendorCode != "" {
-				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, vendorName)
-			}
+			// Use consistent vendor name formatting (same as ledger creation)
+			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
 
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
@@ -564,6 +554,20 @@ func (ts *TripSheetXls) escapeXML(s string) string {
 	s = strings.ReplaceAll(s, "\"", "&quot;")
 	s = strings.ReplaceAll(s, "'", "&apos;")
 	return s
+}
+
+// formatVendorName formats vendor name consistently for both ledger creation and vouchers
+func (ts *TripSheetXls) formatVendorName(vendorName, vendorCode string, vendorID int64) string {
+	if vendorName == "" {
+		if vendorCode != "" {
+			return fmt.Sprintf("%s - Vendor_%d", vendorCode, vendorID)
+		}
+		return fmt.Sprintf("Vendor_%d", vendorID)
+	}
+	if vendorCode != "" {
+		return fmt.Sprintf("%s - %s", vendorCode, vendorName)
+	}
+	return vendorName
 }
 
 func (ts *TripSheetXls) isNotValideTripSheetIDs(tripSheetIDs string) bool {
