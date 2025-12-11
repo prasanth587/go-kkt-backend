@@ -42,9 +42,11 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowedMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS", "PATCH"},
 		AllowedHeaders: []string{"Origin", "X-Requested-With", "Content-Type", "Accept",
 			"Authorization", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin"},
+		AllowCredentials: false,
+		MaxAge:           86400, // 24 hours
 	})
 
 	server := http.Server{

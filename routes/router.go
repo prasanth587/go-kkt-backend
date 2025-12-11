@@ -10,7 +10,6 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
-	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"go-transport-hub/utils"
@@ -85,8 +84,7 @@ func RouterConfig() http.Handler {
 	router.Handler("GET", "/swagger/:one/:two/:three", httpSwagger.WrapHandler)
 	router.Handler("GET", "/swagger/:one/:two/:three/:four", httpSwagger.WrapHandler)
 	router.Handler("GET", "/swagger/:one/:two/:three/:four/:five", httpSwagger.WrapHandler)
-	handler := cors.AllowAll().Handler(router)
-	return handler
+	return router
 }
 
 func panicHandler(w http.ResponseWriter, r *http.Request, c interface{}) {
