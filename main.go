@@ -41,12 +41,12 @@ func main() {
 	//r := chi.NewRouter()
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS", "PATCH"},
-		AllowedHeaders: []string{"Origin", "X-Requested-With", "Content-Type", "Accept",
-			"Authorization", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin"},
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "PUT", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
 		MaxAge:           86400, // 24 hours
+		Debug:            false,
 	})
 
 	server := http.Server{
