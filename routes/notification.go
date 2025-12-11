@@ -12,10 +12,11 @@ import (
 )
 
 func notificationRoutes(router *httprouter.Router, recoverHandler alice.Chain) {
-	router.GET("/v1/:orgId/notifications", wrapHandler(recoverHandler.ThenFunc(getNotifications)))
+	// Register more specific routes first to avoid conflicts
 	router.GET("/v1/:orgId/notifications/unread-count", wrapHandler(recoverHandler.ThenFunc(getUnreadCount)))
-	router.POST("/v1/:orgId/notifications/mark-read", wrapHandler(recoverHandler.ThenFunc(markAsRead)))
 	router.POST("/v1/:orgId/notifications/mark-all-read", wrapHandler(recoverHandler.ThenFunc(markAllAsRead)))
+	router.POST("/v1/:orgId/notifications/mark-read", wrapHandler(recoverHandler.ThenFunc(markAsRead)))
+	router.GET("/v1/:orgId/notifications", wrapHandler(recoverHandler.ThenFunc(getNotifications)))
 }
 
 func getNotifications(w http.ResponseWriter, r *http.Request) {
