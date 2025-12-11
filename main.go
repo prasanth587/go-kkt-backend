@@ -40,22 +40,8 @@ func main() {
 	router := routes.RouterConfig()
 	//r := chi.NewRouter()
 
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS", "PATCH"},
-		AllowedHeaders: []string{
-			"Origin",
-			"X-Requested-With",
-			"Content-Type",
-			"Accept",
-			"Authorization",
-			"Access-Control-Request-Method",
-			"Access-Control-Request-Headers",
-		},
-		ExposedHeaders:   []string{"Content-Length"},
-		AllowCredentials: false,
-		MaxAge:           86400, // 24 hours
-	})
+	// Use AllowAll() for maximum compatibility - handles all CORS preflight requests
+	c := cors.AllowAll()
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", 9005),
