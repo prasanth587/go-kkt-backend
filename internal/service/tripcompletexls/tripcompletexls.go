@@ -406,6 +406,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
 			if vendorName != "" {
 				vendorMap[vendorName] = true
+				ts.l.Info("Collecting vendor for ledger creation: ", vendorName)
 			}
 		}
 	}
@@ -414,6 +415,12 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n        <LEDGER NAME=\"Sales - Transport\" ACTION=\"Create\">")
 	xml.WriteString("\n          <NAME>Sales - Transport</NAME>")
 	xml.WriteString("\n          <PARENT>Sales Accounts</PARENT>")
+	xml.WriteString("\n        </LEDGER>")
+
+	// Ensure Cash ledger exists (required for payment vouchers)
+	xml.WriteString("\n        <LEDGER NAME=\"Cash\" ACTION=\"Create\">")
+	xml.WriteString("\n          <NAME>Cash</NAME>")
+	xml.WriteString("\n          <PARENT>Cash-in-Hand</PARENT>")
 	xml.WriteString("\n        </LEDGER>")
 
 	// Generate Customer Ledgers (Sundry Debtors)
@@ -429,8 +436,10 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	// Generate Vendor Ledgers (Sundry Creditors)
 	for vendorName := range vendorMap {
 		if vendorName != "" {
-			xml.WriteString("\n        <LEDGER NAME=\"" + ts.escapeXML(vendorName) + "\" ACTION=\"Create\">")
-			xml.WriteString("\n          <NAME>" + ts.escapeXML(vendorName) + "</NAME>")
+			escapedName := ts.escapeXML(vendorName)
+			ts.l.Info("Creating vendor ledger: ", escapedName)
+			xml.WriteString("\n        <LEDGER NAME=\"" + escapedName + "\" ACTION=\"Create\">")
+			xml.WriteString("\n          <NAME>" + escapedName + "</NAME>")
 			xml.WriteString("\n          <PARENT>Sundry Creditors</PARENT>")
 			xml.WriteString("\n        </LEDGER>")
 		}
@@ -500,6 +509,8 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 
 			// Use consistent vendor name formatting (same as ledger creation)
 			vendorName := ts.formatVendorName(trip.VendorName, trip.VendorCode, trip.VendorID)
+			escapedVendorName := ts.escapeXML(vendorName)
+			ts.l.Info("Using vendor name in voucher: ", escapedVendorName, " (original: ", vendorName, ")")
 
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
@@ -508,7 +519,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
 
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
-			xml.WriteString("\n            <LEDGERNAME>" + ts.escapeXML(vendorName) + "</LEDGERNAME>")
+			xml.WriteString("\n            <LEDGERNAME>" + escapedVendorName + "</LEDGERNAME>")
 			xml.WriteString("\n            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>")
 			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(vendorTotal) + "</AMOUNT>")
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
@@ -553,7 +564,14 @@ func (ts *TripSheetXls) escapeXML(s string) string {
 	s = strings.ReplaceAll(s, ">", "&gt;")
 	s = strings.ReplaceAll(s, "\"", "&quot;")
 	s = strings.ReplaceAll(s, "'", "&apos;")
-	return s
+	// Remove invalid XML control characters (0x00-0x1F except tab, newline, carriage return)
+	var result strings.Builder
+	for _, r := range s {
+		if r >= 0x20 || r == 0x09 || r == 0x0A || r == 0x0D {
+			result.WriteRune(r)
+		}
+	}
+	return result.String()
 }
 
 // formatVendorName formats vendor name consistently for both ledger creation and vouchers
