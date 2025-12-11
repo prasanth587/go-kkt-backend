@@ -13,7 +13,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
+
 	"go-transport-hub/utils"
 )
 
@@ -56,18 +56,6 @@ func (lr *LRReceipt) CreateLRReceipt(lrReq dtos.LRReceiptReq) (*dtos.Messge, err
 		return nil, errT
 	}
 
-	// Get LR ID after creation for notification
-	lrRecords, _, errG := lr.lrReceiptDao.GetLRRecords(lrReq.OrgID, fmt.Sprintf("WHERE lr_number = '%s'", lrReq.LRNumber), 1, 0)
-	// Temporarily disabled - notification code
-	// if errG == nil && lrRecords != nil && len(*lrRecords) > 0 {
-	// 	lrRecord := (*lrRecords)[0]
-	// 	// Send notification for LR receipt creation
-	// 	notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
-	// 	if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
-	// 		lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
-	// 		// Don't fail the request if notification fails
-	// 	}
-	// }
 
 	lr.l.Info("LR Receipt created successfully! : ", lrReq.TripSheetNum)
 
@@ -99,12 +87,6 @@ func (lr *LRReceipt) UpdateLR(lrId int64, updateLRReq dtos.LRReceiptUpdateReq) (
 		return nil, err1
 	}
 
-	// Send notification for LR receipt update
-	// Temporarily disabled
-	// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
-	// if err := notificationSvc.NotifyLRReceiptUpdated(int64(lrInfo.OrgID), lrId, updateLRReq.LRNumber); err != nil {
-	// 	lr.l.Error("ERROR: Failed to send LR receipt update notification: ", err)
-	// 	// Don't fail the request if notification fails
 	// }
 
 	lr.l.Info("LR updated successfully! : ", lrId, updateLRReq.LRNumber, updateLRReq.TripSheetNum)

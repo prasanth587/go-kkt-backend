@@ -16,7 +16,7 @@ import (
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
 	"go-transport-hub/internal/service/commonsvc"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
+
 	"go-transport-hub/internal/service/tripcompletexls"
 	"go-transport-hub/utils"
 )
@@ -83,7 +83,6 @@ func (trp *InvoiceObj) CancelDraftInvoice(invoiceId int64) (*dtos.Messge, error)
 		return nil, errU
 	}
 
-	// Get invoice info for notification
 	invoiceRes, errU := trp.invoiceDao.GetInvoiceInfo(invoiceId)
 	if errU == nil && invoiceRes != nil {
 		// Get orgId from customer
@@ -91,17 +90,11 @@ func (trp *InvoiceObj) CancelDraftInvoice(invoiceId int64) (*dtos.Messge, error)
 			customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 			customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 			if errC == nil && customer != nil {
-			// Send notification for invoice cancellation
-			// Temporarily disabled
-			// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-			// invoiceNo := invoiceRes.InvoiceNumber
-			// if invoiceNo == "" {
-			// 	invoiceNo = fmt.Sprintf("Draft Invoice #%d", invoiceId)
-			// }
-			// if err := notificationSvc.NotifyInvoiceCancelled(int64(customer.OrgId), invoiceId, invoiceNo); err != nil {
-			// 	trp.l.Error("ERROR: Failed to send invoice cancellation notification: ", err)
-			// 	// Don't fail the request if notification fails
-			// }
+				// invoiceNo := invoiceRes.InvoiceNumber
+				// if invoiceNo == "" {
+				// 	invoiceNo = fmt.Sprintf("Draft Invoice #%d", invoiceId)
+				// }
+				// }
 			}
 		}
 	}
@@ -150,17 +143,11 @@ func (trp *InvoiceObj) UpdateInvoiceNumber(invoiceId int64, invoiceNumber string
 		}
 	}
 
-	// Send notification for invoice number update
 	if invoiceRes.CustomerId > 0 {
 		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 		if errC == nil && customer != nil {
-		// Temporarily disabled
-		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-		// if err := notificationSvc.NotifyInvoiceNumberUpdated(int64(customer.OrgId), invoiceId, invoiceNumber); err != nil {
-		// 	trp.l.Error("ERROR: Failed to send invoice number update notification: ", err)
-		// 	// Don't fail the request if notification fails
-		// }
+			// }
 		}
 	}
 
@@ -215,17 +202,11 @@ func (trp *InvoiceObj) UpdateInvoicePaid(invoiceId int64, invoicePaidDate, trans
 		}
 	}
 
-	// Send notification for invoice paid
 	if invoiceRes.CustomerId > 0 {
 		customerDao := daos.NewCustomerObj(trp.l, trp.dbConnMSSQL)
 		customer, errC := customerDao.GetCustomerV1(invoiceRes.CustomerId)
 		if errC == nil && customer != nil {
-		// Temporarily disabled
-		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-		// if err := notificationSvc.NotifyInvoicePaid(int64(customer.OrgId), invoiceId, invoiceRes.InvoiceNumber, invoiceRes.InvoiceAmount); err != nil {
-		// 	trp.l.Error("ERROR: Failed to send invoice paid notification: ", err)
-		// 	// Don't fail the request if notification fails
-		// }
+			// }
 		}
 	}
 

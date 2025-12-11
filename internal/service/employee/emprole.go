@@ -17,7 +17,7 @@ import (
 	"go-transport-hub/dtos"
 	"go-transport-hub/dtos/schema"
 	"go-transport-hub/internal/daos"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
+
 	"go-transport-hub/utils"
 )
 
@@ -307,12 +307,6 @@ func (ul *EmpRoleObj) UpdateEmployee(employeeId int64, employeeReq dtos.UpdateEm
 		}
 	}
 
-	// Send notification for employee update
-	// Temporarily disabled
-	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
-	// if err := notificationSvc.NotifyEmployeeUpdated(int64(emplopleeInfo.OrgID), employeeId, employeeReq.FirstName); err != nil {
-	// 	ul.l.Error("ERROR: Failed to send employee update notification: ", err)
-	// 	// Don't fail the request if notification fails
 	// }
 
 	ul.l.Info("employee updated successfully!: ", emplopleeInfo.EmpId, employeeReq.FirstName)
@@ -469,12 +463,6 @@ func (ul *EmpRoleObj) UpdateEmployeeRole(empRole dtos.EmpRoleUpdate, roleId int6
 		}
 	}
 
-	// Send notification for role update
-	// Temporarily disabled
-	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
-	// if err := notificationSvc.NotifyRoleUpdated(int64(empRole.OrgId), roleId, empRole.RoleName); err != nil {
-	// 	ul.l.Error("ERROR: Failed to send role update notification: ", err)
-	// 	// Don't fail the request if notification fails
 	// }
 
 	roleResponse := dtos.EmpRoleResponse{}

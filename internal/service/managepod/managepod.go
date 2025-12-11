@@ -18,7 +18,7 @@ import (
 	"go-transport-hub/dbconn/mssqlcon"
 	"go-transport-hub/dtos"
 	"go-transport-hub/internal/daos"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
+
 	"go-transport-hub/utils"
 )
 
@@ -62,12 +62,6 @@ func (mp *ManagePod) CreateManagePod(podReq dtos.ManagePodReq) (*dtos.Messge, er
 		return nil, errT
 	}
 
-	// Send notification for POD submission
-	// Temporarily disabled
-	// notificationSvc := notification.New(mp.l, mp.dbConnMSSQL)
-	// if err := notificationSvc.NotifyPODSubmitted(int64(podReq.OrgId), podReq.TripSheetID, podReq.TripSheetNum); err != nil {
-	// 	mp.l.Error("ERROR: Failed to send POD submission notification: ", err)
-	// 	// Don't fail the request if notification fails
 	// }
 
 	mp.l.Info("POD created successfully! : ", podReq.TripSheetNum)

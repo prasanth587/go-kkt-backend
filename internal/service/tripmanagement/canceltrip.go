@@ -3,7 +3,6 @@ package tripmanagement
 import (
 	"go-transport-hub/constant"
 	"go-transport-hub/dtos"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
 )
 
 func (trp *TripSheetObj) CancelTripSheet(tripSheetId int64) (*dtos.Messge, error) {
@@ -25,15 +24,8 @@ func (trp *TripSheetObj) CancelTripSheet(tripSheetId int64) (*dtos.Messge, error
 		return nil, errM
 	}
 
-	// Get trip sheet info for notification
-	// Temporarily disabled
 	// tripSheetInfo, errV := trp.tripSheetDao.GetTripSheet(tripSheetId)
 	// if errV == nil {
-	// 	// Send notification for trip cancellation
-	// 	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
-	// 	if err := notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, tripSheetInfo.LoadStatus, constant.STATUS_CANCELLED); err != nil {
-	// 		trp.l.Error("ERROR: Failed to send cancellation notification: ", err)
-	// 		// Don't fail the request if notification fails
 	// 	}
 	// }
 

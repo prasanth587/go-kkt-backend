@@ -7,7 +7,7 @@ import (
 
 	"go-transport-hub/constant"
 	"go-transport-hub/dtos"
-	// "go-transport-hub/internal/service/notification" // Temporarily disabled
+
 	"go-transport-hub/utils"
 )
 
@@ -31,7 +31,6 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 
 	// }
 
-	// oldStatus := tripSheetInfo.LoadStatus // Temporarily disabled (was used for notifications)
 	tripSheetUpdateReq.TripSubmittedDate = tripSheetInfo.TripSubmittedDate
 	tripSheetUpdateReq.LoadStatus = tripSheetInfo.LoadStatus
 	if tripSheetInfo.LoadStatus == constant.STATUS_CREATED {
@@ -103,29 +102,18 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 		trp.l.Info("upadated unloading points : ", updateLoading, loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
 	}
 
-	// Send notification if status changed
-	// Temporarily disabled
 	// if oldStatus != tripSheetUpdateReq.LoadStatus {
-	// 	notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
 	// 	var err error
 
 	// 	switch tripSheetUpdateReq.LoadStatus {
 	// 	case constant.STATUS_SUBMITTED:
-	// 		err = notificationSvc.NotifyTripSheetInTransit(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
 	// 	case constant.STATUS_DELIVERED:
-	// 		err = notificationSvc.NotifyTripSheetDelivered(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
 	// 	case constant.STATUS_CLOSED:
-	// 		err = notificationSvc.NotifyTripSheetClosed(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
 	// 	case constant.STATUS_COMPLETED:
-	// 		err = notificationSvc.NotifyTripSheetCompleted(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum)
 	// 	default:
-	// 		// Generic status change notification
-	// 		err = notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, oldStatus, tripSheetUpdateReq.LoadStatus)
 	// 	}
 
 	// 	if err != nil {
-	// 		trp.l.Error("ERROR: Failed to send status change notification: ", err)
-	// 		// Don't fail the request if notification fails
 	// 	}
 	// }
 
