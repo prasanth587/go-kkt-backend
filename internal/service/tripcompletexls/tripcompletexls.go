@@ -337,7 +337,7 @@ func (ts *TripSheetXls) GetTripsByIdsTally(orgId int64, tripSheetIds string) ([]
 		return nil, errors.New("tripSheetIds should not be empty")
 	}
 	tripSheetIds = strings.ReplaceAll(tripSheetIds, " ", "")
-	
+
 	if !ts.isNotValideTripSheetIDs(tripSheetIds) {
 		ts.l.Error("tripSheetIds is not a expected format. ", tripSheetIds)
 		return nil, errors.New("tripSheetIds is not a expected format")
@@ -366,7 +366,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n    <VERSION>1</VERSION>")
 	xml.WriteString("\n    <TALLYREQUEST>Import</TALLYREQUEST>")
 	xml.WriteString("\n    <TYPE>Data</TYPE>")
-	xml.WriteString("\n    <ID>Vouchers</ID>")
+	xml.WriteString("\n    <ID>All Masters</ID>")
 	xml.WriteString("\n  </HEADER>")
 	xml.WriteString("\n  <BODY>")
 	xml.WriteString("\n    <DESC>")
@@ -375,6 +375,74 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n      </STATICVARIABLES>")
 	xml.WriteString("\n    </DESC>")
 	xml.WriteString("\n    <DATA>")
+	xml.WriteString("\n      <TALLYMESSAGE>")
+
+	// Collect unique customer names and vendor names
+	customerMap := make(map[string]bool)
+	vendorMap := make(map[string]bool)
+
+	for _, trip := range *trips {
+		// Collect customers
+		if trip.CustomerName != "" && trip.CustomerTotalHire > 0 && trip.CustomerInvoiceNo != "" {
+			customerMap[trip.CustomerName] = true
+		}
+
+		// Collect vendors
+		vendorTotal := trip.VendorTotalHire
+		if trip.VendorLoadUnLoadAmount > 0 {
+			vendorTotal += trip.VendorLoadUnLoadAmount
+		}
+		if trip.VendorHaltingPaid > 0 {
+			vendorTotal += trip.VendorHaltingPaid
+		}
+		if trip.VendorExtraDelivery > 0 {
+			vendorTotal += trip.VendorExtraDelivery
+		}
+		if trip.VendorAdvance > 0 {
+			vendorTotal -= trip.VendorAdvance
+		}
+
+		if vendorTotal > 0 && trip.VendorPaidDate != "" {
+			vendorName := trip.VendorName
+			if vendorName == "" {
+				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, fmt.Sprintf("Vendor_%d", trip.VendorID))
+			} else if trip.VendorCode != "" {
+				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, vendorName)
+			}
+			if vendorName != "" {
+				vendorMap[vendorName] = true
+			}
+		}
+	}
+
+	// Generate "Sales - Transport" ledger (required for sales vouchers)
+	xml.WriteString("\n        <LEDGER NAME=\"Sales - Transport\" ACTION=\"Create\">")
+	xml.WriteString("\n          <NAME>Sales - Transport</NAME>")
+	xml.WriteString("\n          <PARENT>Sales Accounts</PARENT>")
+	xml.WriteString("\n        </LEDGER>")
+
+	// Generate Customer Ledgers (Sundry Debtors)
+	for customerName := range customerMap {
+		if customerName != "" {
+			xml.WriteString("\n        <LEDGER NAME=\"" + ts.escapeXML(customerName) + "\" ACTION=\"Create\">")
+			xml.WriteString("\n          <NAME>" + ts.escapeXML(customerName) + "</NAME>")
+			xml.WriteString("\n          <PARENT>Sundry Debtors</PARENT>")
+			xml.WriteString("\n        </LEDGER>")
+		}
+	}
+
+	// Generate Vendor Ledgers (Sundry Creditors)
+	for vendorName := range vendorMap {
+		if vendorName != "" {
+			xml.WriteString("\n        <LEDGER NAME=\"" + ts.escapeXML(vendorName) + "\" ACTION=\"Create\">")
+			xml.WriteString("\n          <NAME>" + ts.escapeXML(vendorName) + "</NAME>")
+			xml.WriteString("\n          <PARENT>Sundry Creditors</PARENT>")
+			xml.WriteString("\n        </LEDGER>")
+		}
+	}
+
+	// Close the first TALLYMESSAGE for ledgers and start vouchers in same envelope
+	xml.WriteString("\n      </TALLYMESSAGE>")
 	xml.WriteString("\n      <TALLYMESSAGE>")
 
 	voucherCount := 0
@@ -392,19 +460,19 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			xml.WriteString("\n          <VOUCHERTYPE>Sales</VOUCHERTYPE>")
 			xml.WriteString("\n          <VOUCHERNUMBER>" + trip.CustomerInvoiceNo + "</VOUCHERNUMBER>")
 			xml.WriteString("\n          <PARTYNAME>" + ts.escapeXML(trip.CustomerName) + "</PARTYNAME>")
-			
+
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>" + ts.escapeXML(trip.CustomerName) + "</LEDGERNAME>")
 			xml.WriteString("\n            <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>")
 			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(trip.CustomerTotalHire) + "</AMOUNT>")
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
-			
+
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Sales - Transport</LEDGERNAME>")
 			xml.WriteString("\n            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>")
 			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(trip.CustomerTotalHire) + "</AMOUNT>")
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
-			
+
 			xml.WriteString("\n        </VOUCHER>")
 		}
 
@@ -423,7 +491,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 		if trip.VendorAdvance > 0 {
 			vendorTotal -= trip.VendorAdvance // Advance is deducted
 		}
-		
+
 		if vendorTotal > 0 && trip.VendorPaidDate != "" {
 			voucherCount++
 			xml.WriteString("\n        <VOUCHER REMOTEID=\"\" VCHKEY=\"\" VCHTYPE=\"Payment\" ACTION=\"Create\">")
@@ -434,7 +502,7 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			}
 			xml.WriteString("</NARRATION>")
 			xml.WriteString("\n          <VOUCHERTYPE>Payment</VOUCHERTYPE>")
-			
+
 			// Use actual vendor name, or fallback to Vendor_[ID] if name is empty
 			vendorName := trip.VendorName
 			if vendorName == "" {
@@ -442,19 +510,19 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 			} else if trip.VendorCode != "" {
 				vendorName = fmt.Sprintf("%s - %s", trip.VendorCode, vendorName)
 			}
-			
+
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>Cash</LEDGERNAME>")
 			xml.WriteString("\n            <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>")
 			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(vendorTotal) + "</AMOUNT>")
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
-			
+
 			xml.WriteString("\n          <ALLLEDGERENTRIES.LIST>")
 			xml.WriteString("\n            <LEDGERNAME>" + ts.escapeXML(vendorName) + "</LEDGERNAME>")
 			xml.WriteString("\n            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>")
 			xml.WriteString("\n            <AMOUNT>" + ts.formatAmount(vendorTotal) + "</AMOUNT>")
 			xml.WriteString("\n          </ALLLEDGERENTRIES.LIST>")
-			
+
 			xml.WriteString("\n        </VOUCHER>")
 		}
 	}
@@ -463,8 +531,9 @@ func (ts *TripSheetXls) generateTallyXML(trips *[]dtos.DownloadTripSheetXls, tri
 	xml.WriteString("\n    </DATA>")
 	xml.WriteString("\n  </BODY>")
 	xml.WriteString("\n</ENVELOPE>")
-	
-	ts.l.Info("Generated Tally XML with ", voucherCount, " vouchers")
+
+	ledgerCount := len(customerMap) + len(vendorMap) + 1 // +1 for Sales - Transport
+	ts.l.Info("Generated Tally XML with ", ledgerCount, " ledgers and ", voucherCount, " vouchers")
 	return xml.String()
 }
 
