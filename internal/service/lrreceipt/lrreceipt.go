@@ -65,8 +65,8 @@ func (lr *LRReceipt) CreateLRReceipt(lrReq dtos.LRReceiptReq) (*dtos.Messge, err
 		// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
 		// if err := notificationSvc.NotifyLRReceiptCreated(int64(lrReq.OrgID), lrRecord.LRId, lrReq.LRNumber); err != nil {
 		// 	lr.l.Error("ERROR: Failed to send LR receipt creation notification: ", err)
-			// Don't fail the request if notification fails
-		}
+		// 	// Don't fail the request if notification fails
+		// }
 	}
 
 	lr.l.Info("LR Receipt created successfully! : ", lrReq.TripSheetNum)
@@ -104,8 +104,8 @@ func (lr *LRReceipt) UpdateLR(lrId int64, updateLRReq dtos.LRReceiptUpdateReq) (
 	// notificationSvc := notification.New(lr.l, lr.dbConnMSSQL)
 	// if err := notificationSvc.NotifyLRReceiptUpdated(int64(lrInfo.OrgID), lrId, updateLRReq.LRNumber); err != nil {
 	// 	lr.l.Error("ERROR: Failed to send LR receipt update notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// 	// Don't fail the request if notification fails
+	// }
 
 	lr.l.Info("LR updated successfully! : ", lrId, updateLRReq.LRNumber, updateLRReq.TripSheetNum)
 

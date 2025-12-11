@@ -123,11 +123,11 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 	// 		err = notificationSvc.NotifyTripSheetStatusChanged(tripSheetInfo.OrgID, tripSheetId, tripSheetInfo.TripSheetNum, oldStatus, tripSheetUpdateReq.LoadStatus)
 	// 	}
 
-		if err != nil {
-			trp.l.Error("ERROR: Failed to send status change notification: ", err)
-			// Don't fail the request if notification fails
-		}
-	}
+	// 	if err != nil {
+	// 		trp.l.Error("ERROR: Failed to send status change notification: ", err)
+	// 		// Don't fail the request if notification fails
+	// 	}
+	// }
 
 	trp.l.Info("tripsheet updated successfully! : ", tripSheetUpdateReq.TripSheetNum)
 

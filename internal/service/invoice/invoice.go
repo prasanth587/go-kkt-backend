@@ -100,8 +100,8 @@ func (trp *InvoiceObj) CancelDraftInvoice(invoiceId int64) (*dtos.Messge, error)
 			// }
 			// if err := notificationSvc.NotifyInvoiceCancelled(int64(customer.OrgId), invoiceId, invoiceNo); err != nil {
 			// 	trp.l.Error("ERROR: Failed to send invoice cancellation notification: ", err)
-					// Don't fail the request if notification fails
-				}
+			// 	// Don't fail the request if notification fails
+			// }
 			}
 		}
 	}
@@ -158,9 +158,9 @@ func (trp *InvoiceObj) UpdateInvoiceNumber(invoiceId int64, invoiceNumber string
 		// Temporarily disabled
 		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
 		// if err := notificationSvc.NotifyInvoiceNumberUpdated(int64(customer.OrgId), invoiceId, invoiceNumber); err != nil {
-				trp.l.Error("ERROR: Failed to send invoice number update notification: ", err)
-				// Don't fail the request if notification fails
-			}
+		// 	trp.l.Error("ERROR: Failed to send invoice number update notification: ", err)
+		// 	// Don't fail the request if notification fails
+		// }
 		}
 	}
 
@@ -223,9 +223,9 @@ func (trp *InvoiceObj) UpdateInvoicePaid(invoiceId int64, invoicePaidDate, trans
 		// Temporarily disabled
 		// notificationSvc := notification.New(trp.l, trp.dbConnMSSQL)
 		// if err := notificationSvc.NotifyInvoicePaid(int64(customer.OrgId), invoiceId, invoiceRes.InvoiceNumber, invoiceRes.InvoiceAmount); err != nil {
-				trp.l.Error("ERROR: Failed to send invoice paid notification: ", err)
-				// Don't fail the request if notification fails
-			}
+		// 	trp.l.Error("ERROR: Failed to send invoice paid notification: ", err)
+		// 	// Don't fail the request if notification fails
+		// }
 		}
 	}
 

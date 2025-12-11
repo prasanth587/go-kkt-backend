@@ -312,8 +312,8 @@ func (ul *EmpRoleObj) UpdateEmployee(employeeId int64, employeeReq dtos.UpdateEm
 	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
 	// if err := notificationSvc.NotifyEmployeeUpdated(int64(emplopleeInfo.OrgID), employeeId, employeeReq.FirstName); err != nil {
 	// 	ul.l.Error("ERROR: Failed to send employee update notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// 	// Don't fail the request if notification fails
+	// }
 
 	ul.l.Info("employee updated successfully!: ", emplopleeInfo.EmpId, employeeReq.FirstName)
 
@@ -474,8 +474,8 @@ func (ul *EmpRoleObj) UpdateEmployeeRole(empRole dtos.EmpRoleUpdate, roleId int6
 	// notificationSvc := notification.New(ul.l, ul.dbConnMSSQL)
 	// if err := notificationSvc.NotifyRoleUpdated(int64(empRole.OrgId), roleId, empRole.RoleName); err != nil {
 	// 	ul.l.Error("ERROR: Failed to send role update notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// 	// Don't fail the request if notification fails
+	// }
 
 	roleResponse := dtos.EmpRoleResponse{}
 	roleResponse.Message = fmt.Sprintf("Role updated successfully : %s", empRole.RoleName)

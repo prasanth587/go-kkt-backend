@@ -93,8 +93,8 @@ func (lp *LoadingPointObj) CreateLoadingPoint(loadingPointReq dtos.LoadingPointR
 				// notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
 				// if err := notificationSvc.NotifyLoadingPointCreated(int64(loadingPointReq.OrgID), lpItem.LoadingPointID, loadingPointReq.CityName); err != nil {
 				// 	lp.l.Error("ERROR: Failed to send loading point creation notification: ", err)
-					// Don't fail the request if notification fails
-				}
+				// 	// Don't fail the request if notification fails
+				// }
 				break
 			}
 		}
@@ -182,8 +182,8 @@ func (lp *LoadingPointObj) UpdateLoadingPoint(loadingPointId int64, loadingPoint
 	// notificationSvc := notification.New(lp.l, lp.dbConnMSSQL)
 	// if err := notificationSvc.NotifyLoadingPointUpdated(int64(loadingpointInfo.OrgID), loadingPointId, loadingPointReq.CityName); err != nil {
 	// 	lp.l.Error("ERROR: Failed to send loading point update notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// 	// Don't fail the request if notification fails
+	// }
 
 	lp.l.Info("loadingpoint updated successfully! : ", loadingPointReq.CityName)
 

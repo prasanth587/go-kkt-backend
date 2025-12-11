@@ -362,8 +362,8 @@ func (vh *VendorObj) UpdateVendorV1(vendorId int64, vendorReg dtos.VendorV1Updat
 	// notificationSvc := notification.New(vh.l, vh.dbConnMSSQL)
 	// if err := notificationSvc.NotifyVendorUpdated(int64(vendorReg.OrgID), vendorId, vendorReg.VendorName); err != nil {
 	// 	vh.l.Error("ERROR: Failed to send vendor update notification: ", err)
-		// Don't fail the request if notification fails
-	}
+	// 	// Don't fail the request if notification fails
+	// }
 
 	vh.l.Info("Vendor updated successfully! : ", vendorReg.VendorName)
 
