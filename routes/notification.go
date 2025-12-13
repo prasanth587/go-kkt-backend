@@ -12,10 +12,12 @@ import (
 )
 
 func notificationRoutes(router *httprouter.Router, recoverHandler alice.Chain) {
-	// Register more specific routes first to avoid conflicts
+	// Only register the GET route for fetching notifications
+	// Register more specific routes FIRST to avoid httprouter conflicts
 	router.GET("/v1/:orgId/notifications/unread-count", wrapHandler(recoverHandler.ThenFunc(getUnreadCount)))
 	router.POST("/v1/:orgId/notifications/mark-all-read", wrapHandler(recoverHandler.ThenFunc(markAllAsRead)))
 	router.POST("/v1/:orgId/notifications/mark-read", wrapHandler(recoverHandler.ThenFunc(markAsRead)))
+	// Register the base route LAST (least specific)
 	router.GET("/v1/:orgId/notifications", wrapHandler(recoverHandler.ThenFunc(getNotifications)))
 }
 
@@ -106,6 +108,7 @@ func getUnreadCount(w http.ResponseWriter, r *http.Request) {
 func markAsRead(w http.ResponseWriter, r *http.Request) {
 	rd := logAndGetContext(w, r)
 
+	// Get orgId from params (works for both route patterns)
 	orgID, isErr := GetIDFromParams(w, r, "orgId")
 	if !isErr {
 		return
@@ -139,6 +142,7 @@ func markAsRead(w http.ResponseWriter, r *http.Request) {
 func markAllAsRead(w http.ResponseWriter, r *http.Request) {
 	rd := logAndGetContext(w, r)
 
+	// Get orgId from params (works for both route patterns)
 	orgID, isErr := GetIDFromParams(w, r, "orgId")
 	if !isErr {
 		return

@@ -331,7 +331,7 @@ func ViweImage(w http.ResponseWriter, r *http.Request) {
 		writeJSONMessage(fmt.Sprintf("failed to read file: %s", err.Error()), ERR_MSG, http.StatusBadRequest, rd)
 		return
 	}
-	
+
 	// Determine content type based on file extension
 	ext := filepath.Ext(imagePath)
 	contentType := "image/png" // default
@@ -345,7 +345,7 @@ func ViweImage(w http.ResponseWriter, r *http.Request) {
 	case ".pdf":
 		contentType = "application/pdf"
 	}
-	
+
 	rd.w.Header().Set("Content-Type", contentType)
 	writeImageResponse(imageByte, http.StatusOK, rd)
 }

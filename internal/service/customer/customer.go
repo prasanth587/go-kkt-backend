@@ -89,8 +89,6 @@ func (cus *CustomerObj) CreateCustomerV1(customerReq dtos.CustomersReq) (*dtos.M
 
 	cus.l.Info("Customer created successfully! : ", customerId, customerReq.CustomerName)
 
-	// }
-
 	if len(customerReq.ContactInfo) != 0 {
 		for _, contactInfo := range customerReq.ContactInfo {
 			err1 := cus.customerDao.CreateCustomerContactInfo(customerId, contactInfo)

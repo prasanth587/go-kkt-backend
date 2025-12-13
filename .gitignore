@@ -6,6 +6,7 @@ go-transport-hub
 
 # Sensitive Environment Files
 .env
+.env.local
 dev.env
 build.sh
 

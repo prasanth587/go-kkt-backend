@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "=== Checking SMS Configuration ==="
+echo ""
+echo "1. Checking environment variables in run-dev.sh:"
+grep -A 3 "TWILIO" run-dev.sh | grep -v "^#"
+echo ""
+echo "2. To test SMS, run:"
+echo "   go run test_sms.go"
+echo ""
+echo "3. Make sure to:"
+echo "   - Edit test_sms.go and set your verified phone number"
+echo "   - Verify the phone number in Twilio Console first!"
+echo ""
