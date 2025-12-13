@@ -50,61 +50,67 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 		return nil, err1
 	}
 
-	// Send SMS to vendor if payment was made
+	// Send SMS to vendor if payment was made (call immediately after successful payment update)
+	// This ensures SMS is sent even if there are errors with loading/unloading points later
+	trp.l.Info("Payment update successful, checking if SMS should be sent...")
 	trp.sendPaymentSMS(tripSheetInfo, tripSheetUpdateReq)
 
+	// Update loading/unloading points if needed
+	// Note: Errors here won't prevent SMS from being sent (already sent above)
 	loadUnloads, errL := trp.tripSheetDao.GetTripSheetLoadUnLoadPoints(tripSheetId)
 	if errL != nil {
 		trp.l.Error("ERROR: GetTripSheetLoadUnLoadPoints ", tripSheetUpdateReq.TripSheetNum, errL)
-		return nil, errL
-	}
-	loadingPoints := make([]int64, 0)
-	unloadingPoints := make([]int64, 0)
+		// Don't return error - payment was already updated and SMS was sent
+		trp.l.Info("Continuing despite loading/unloading points error - payment update and SMS already processed")
+	} else {
+		loadingPoints := make([]int64, 0)
+		unloadingPoints := make([]int64, 0)
 
-	for _, point := range *loadUnloads {
-		switch point.Type {
-		case constant.LOADING_POINT:
-			loadingPoints = append(loadingPoints, point.LoadingPointID)
-		case constant.UN_LOADING_POINT:
-			unloadingPoints = append(unloadingPoints, point.LoadingPointID)
-		}
-	}
-
-	updateLoading := IsNeedsToUpdateLoadUnLoadPoints(loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
-	updateUnLoading := IsNeedsToUpdateLoadUnLoadPoints(unloadingPoints, tripSheetUpdateReq.UnLoadingPointIDs)
-
-	if updateLoading {
-		errD := trp.tripSheetDao.DeleteTripSheetLoadUnLoadPoints(tripSheetId, constant.LOADING_POINT)
-		if errD != nil {
-			trp.l.Error("ERROR: DeleteTripSheetLoadUnLoadPoints ", tripSheetUpdateReq.TripSheetNum, errD)
-			return nil, errD
-		}
-
-		for _, loadingPointId := range tripSheetUpdateReq.LoadingPointIDs {
-			errD := trp.tripSheetDao.SaveTripSheetLoadingPoint(uint64(tripSheetId), uint64(loadingPointId), constant.LOADING_POINT)
-			if errD != nil {
-				trp.l.Error("ERROR: SaveTripSheetLoadingPoint", errD)
-				return nil, errD
+		for _, point := range *loadUnloads {
+			switch point.Type {
+			case constant.LOADING_POINT:
+				loadingPoints = append(loadingPoints, point.LoadingPointID)
+			case constant.UN_LOADING_POINT:
+				unloadingPoints = append(unloadingPoints, point.LoadingPointID)
 			}
 		}
-		trp.l.Info("upadated loading points : ", updateLoading, loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
-	}
 
-	if updateUnLoading {
-		errD := trp.tripSheetDao.DeleteTripSheetLoadUnLoadPoints(tripSheetId, constant.UN_LOADING_POINT)
-		if errD != nil {
-			trp.l.Error("ERROR: DeleteTripSheetLoadUnLoadPoints ", tripSheetUpdateReq.TripSheetNum, errD)
-			return nil, errD
-		}
+		updateLoading := IsNeedsToUpdateLoadUnLoadPoints(loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
+		updateUnLoading := IsNeedsToUpdateLoadUnLoadPoints(unloadingPoints, tripSheetUpdateReq.UnLoadingPointIDs)
 
-		for _, loadingPointId := range tripSheetUpdateReq.UnLoadingPointIDs {
-			errD := trp.tripSheetDao.SaveTripSheetLoadingPoint(uint64(tripSheetId), uint64(loadingPointId), constant.UN_LOADING_POINT)
+		if updateLoading {
+			errD := trp.tripSheetDao.DeleteTripSheetLoadUnLoadPoints(tripSheetId, constant.LOADING_POINT)
 			if errD != nil {
-				trp.l.Error("ERROR: SaveTripSheetLoadingPoint", errD)
-				return nil, errD
+				trp.l.Error("ERROR: DeleteTripSheetLoadUnLoadPoints ", tripSheetUpdateReq.TripSheetNum, errD)
+				// Don't return - payment and SMS already processed
+			} else {
+				for _, loadingPointId := range tripSheetUpdateReq.LoadingPointIDs {
+					errD := trp.tripSheetDao.SaveTripSheetLoadingPoint(uint64(tripSheetId), uint64(loadingPointId), constant.LOADING_POINT)
+					if errD != nil {
+						trp.l.Error("ERROR: SaveTripSheetLoadingPoint", errD)
+						// Don't return - payment and SMS already processed
+					}
+				}
+				trp.l.Info("upadated loading points : ", updateLoading, loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
 			}
 		}
-		trp.l.Info("upadated unloading points : ", updateLoading, loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
+
+		if updateUnLoading {
+			errD := trp.tripSheetDao.DeleteTripSheetLoadUnLoadPoints(tripSheetId, constant.UN_LOADING_POINT)
+			if errD != nil {
+				trp.l.Error("ERROR: DeleteTripSheetLoadUnLoadPoints ", tripSheetUpdateReq.TripSheetNum, errD)
+				// Don't return - payment and SMS already processed
+			} else {
+				for _, loadingPointId := range tripSheetUpdateReq.UnLoadingPointIDs {
+					errD := trp.tripSheetDao.SaveTripSheetLoadingPoint(uint64(tripSheetId), uint64(loadingPointId), constant.UN_LOADING_POINT)
+					if errD != nil {
+						trp.l.Error("ERROR: SaveTripSheetLoadingPoint", errD)
+						// Don't return - payment and SMS already processed
+					}
+				}
+				trp.l.Info("upadated unloading points : ", updateLoading, loadingPoints, tripSheetUpdateReq.LoadingPointIDs)
+			}
+		}
 	}
 
 	// if oldStatus != tripSheetUpdateReq.LoadStatus {
@@ -153,6 +159,8 @@ func (trp *TripSheetObj) sendPaymentSMS(oldTripSheet *dtos.TripSheet, newTripShe
 	newPaidDate := newTripSheet.VendorPaidDate
 
 	trp.l.Info("=== SMS DEBUG: Checking payment SMS ===")
+	trp.l.Info("Trip Sheet ID: ", oldTripSheet.TripSheetID)
+	trp.l.Info("Trip Sheet Number: ", newTripSheet.TripSheetNum)
 	trp.l.Info("Old paid date: ", oldPaidDate)
 	trp.l.Info("New paid date: ", newPaidDate)
 	trp.l.Info("Vendor ID: ", newTripSheet.VendorID)
