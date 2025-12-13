@@ -15,6 +15,11 @@ import (
 
 func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdateReq dtos.UpdateTripSheetHeader) (*dtos.Messge, error) {
 
+	trp.l.Info("=== UpdateTripSheetHeader CALLED ===")
+	trp.l.Info("Trip Sheet ID: ", tripSheetId)
+	trp.l.Info("Request Vendor Paid Date: ", tripSheetUpdateReq.VendorPaidDate)
+	trp.l.Info("Request Vendor ID: ", tripSheetUpdateReq.VendorID)
+
 	err := trp.validateUpdateTrip(tripSheetUpdateReq)
 	if err != nil {
 		trp.l.Error("ERROR: UpdateTripSheetHeader", err)
@@ -28,6 +33,7 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 	}
 	jsonBytes, _ := json.Marshal(tripSheetInfo)
 	trp.l.Info("TripSheet: ******* ", string(jsonBytes))
+	trp.l.Info("OLD Vendor Paid Date from DB: ", tripSheetInfo.VendorPaidDate)
 
 	// if tripSheetUpdateReq.PodRequired == 0 {
 
@@ -52,8 +58,10 @@ func (trp *TripSheetObj) UpdateTripSheetHeader(tripSheetId int64, tripSheetUpdat
 
 	// Send SMS to vendor if payment was made (call immediately after successful payment update)
 	// This ensures SMS is sent even if there are errors with loading/unloading points later
-	trp.l.Info("Payment update successful, checking if SMS should be sent...")
+	trp.l.Info("=== Payment update successful, checking if SMS should be sent... ===")
+	trp.l.Info("BEFORE sendPaymentSMS - Old Paid Date: '", tripSheetInfo.VendorPaidDate, "' New Paid Date: '", tripSheetUpdateReq.VendorPaidDate, "'")
 	trp.sendPaymentSMS(tripSheetInfo, tripSheetUpdateReq)
+	trp.l.Info("=== AFTER sendPaymentSMS call ===")
 
 	// Update loading/unloading points if needed
 	// Note: Errors here won't prevent SMS from being sent (already sent above)

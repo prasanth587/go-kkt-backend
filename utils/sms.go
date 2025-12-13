@@ -92,6 +92,16 @@ func SendSMS(mobileNumber, message string) error {
 	fmt.Printf("Twilio Response Body: %s\n", string(body))
 	
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		// Parse error response for better debugging
+		var twilioError map[string]interface{}
+		if err := json.Unmarshal(body, &twilioError); err == nil {
+			if code, ok := twilioError["code"].(float64); ok {
+				fmt.Printf("Twilio Error Code: %.0f\n", code)
+			}
+			if msg, ok := twilioError["message"].(string); ok {
+				fmt.Printf("Twilio Error Message: %s\n", msg)
+			}
+		}
 		return fmt.Errorf("Twilio API returned error: %s (status: %d)", string(body), resp.StatusCode)
 	}
 
