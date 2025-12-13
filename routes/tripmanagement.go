@@ -21,6 +21,9 @@ func tripManagementHub(router *httprouter.Router, recoverHandler alice.Chain) {
 	router.GET("/v1/:orgId/trip/sheets/stats", wrapHandler(recoverHandler.ThenFunc(getTripStats)))
 
 	router.GET("/trip/sheet/v1/:tripSheetId/challan/info", wrapHandler(recoverHandler.ThenFunc(tripSheetChallanInfo)))
+
+	// Public route for trip route information (no auth required)
+	router.GET("/public/trip/route/:tripSheetId", wrapHandler(recoverHandler.ThenFunc(getTripRouteInfo)))
 }
 
 func cancelTripSheet(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +185,25 @@ func tripSheetChallanInfo(w http.ResponseWriter, r *http.Request) {
 	res, err := bra.GetTripSheetChallanInfo(tripSheetId, loginId)
 	if err != nil {
 		rd.l.Error("GetTripSheetChallanInfo error: ", err)
+		writeJSONMessage(err.Error(), ERR_MSG, http.StatusBadRequest, rd)
+		return
+	}
+	writeJSONStruct(res, http.StatusOK, rd)
+}
+
+func getTripRouteInfo(w http.ResponseWriter, r *http.Request) {
+	rd := logAndGetContext(w, r)
+
+	tripSheetId, isErr := GetIDFromParams(w, r, "tripSheetId")
+	rd.l.Info("getTripRouteInfo", "tripSheetId: ", tripSheetId)
+	if !isErr {
+		return
+	}
+
+	trp := tripmanagement.New(rd.l, rd.dbConnMSSQL)
+	res, err := trp.GetTripRouteInfo(tripSheetId)
+	if err != nil {
+		rd.l.Error("GetTripRouteInfo error: ", err)
 		writeJSONMessage(err.Error(), ERR_MSG, http.StatusBadRequest, rd)
 		return
 	}

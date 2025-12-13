@@ -86,4 +86,7 @@ type LoadUnLoadLoc struct {
 	LoadingPointId int64  `json:"loading_point_id"`
 	CityCode       string `json:"city_code"`
 	CityName       string `json:"city_name"`
+	MapLink        string `json:"map_link"`
+	AddressLine    string `json:"address_line"`
+	State          string `json:"state"`
 }

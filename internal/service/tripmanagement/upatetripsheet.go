@@ -3,6 +3,7 @@ package tripmanagement
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 
@@ -245,12 +246,26 @@ func (trp *TripSheetObj) sendPaymentSMS(oldTripSheet *dtos.TripSheet, newTripShe
 	// Format amount in Indian currency
 	formattedAmount := utils.FormatIndianCurrency(amount)
 
-	// Create SMS message
-	message := fmt.Sprintf("Dear %s,\n\nPayment of %s has been processed for Trip Sheet %s.\nPayment Type: %s\n\nThank you!\nKK Transport",
+	// Get frontend URL from environment variable
+	// Production: https://kktransport.netlify.app
+	// Development: http://localhost:3000
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		// Default to production URL if not set
+		frontendURL = "https://kktransport.netlify.app"
+	}
+
+	// Create route link
+	tripSheetId := oldTripSheet.TripSheetID
+	routeLink := fmt.Sprintf("%s/route/%d", frontendURL, tripSheetId)
+
+	// Create SMS message with route link
+	message := fmt.Sprintf("Dear %s,\n\nPayment of %s has been processed for Trip Sheet %s.\nPayment Type: %s\n\nView Route: %s\n\nThank you!\nKK Transport",
 		vendor.VendorName,
 		formattedAmount,
 		newTripSheet.TripSheetNum,
 		paymentType,
+		routeLink,
 	)
 
 	// Send SMS (non-blocking - don't fail the payment if SMS fails)

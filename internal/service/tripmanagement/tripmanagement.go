@@ -246,3 +246,51 @@ func (trp *TripSheetObj) GetVehicleSizeType(tripSheetInfo *dtos.TripSheet) strin
 	}
 	return fmt.Sprintf("%s - %s", vehicleType.VehicleSize, vehicleType.VehicleType)
 }
+
+// GetTripRouteInfo returns route information with map links for a trip sheet (public endpoint)
+func (trp *TripSheetObj) GetTripRouteInfo(tripSheetId int64) (*dtos.TripRouteInfoResponse, error) {
+	// Get trip sheet basic info
+	tripSheetInfo, err := trp.tripSheetDao.GetTripSheet(tripSheetId)
+	if err != nil {
+		trp.l.Error("ERROR: TripSheet not found", tripSheetId, err)
+		return nil, err
+	}
+
+	// Get loading/unloading points
+	loadUnloads, err := trp.tripSheetDao.GetTripSheetLoadUnLoadPoints(tripSheetId)
+	if err != nil {
+		trp.l.Error("ERROR: GetTripSheetLoadUnLoadPoints", tripSheetId, err)
+		return nil, err
+	}
+
+	// Get location details with map links
+	preReqDao := daos.NewPreRequisiteObj(trp.l, trp.dbConnMSSQL)
+
+	var loadingPoints []dtos.LoadUnLoadLoc
+	var unloadingPoints []dtos.LoadUnLoadLoc
+
+	for _, point := range *loadUnloads {
+		loc, err := preReqDao.GetLocationNameById(point.LoadingPointID)
+		if err != nil {
+			trp.l.Error("ERROR: GetLocationNameById", point.LoadingPointID, err)
+			continue
+		}
+
+		if point.Type == constant.LOADING_POINT {
+			loadingPoints = append(loadingPoints, *loc)
+		} else if point.Type == constant.UN_LOADING_POINT {
+			unloadingPoints = append(unloadingPoints, *loc)
+		}
+	}
+
+	response := &dtos.TripRouteInfoResponse{
+		TripSheetNum:    tripSheetInfo.TripSheetNum,
+		VehicleNumber:   tripSheetInfo.VehicleNumber,
+		DriverName:      tripSheetInfo.DriverName,
+		MobileNumber:    tripSheetInfo.MobileNumber,
+		LoadingPoints:   loadingPoints,
+		UnLoadingPoints: unloadingPoints,
+	}
+
+	return response, nil
+}

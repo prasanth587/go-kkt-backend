@@ -310,6 +310,15 @@ type TripSheetsForInvoice struct {
 	ZonalName              string  `json:"zonal_name"`
 }
 
+type TripRouteInfoResponse struct {
+	TripSheetNum    string          `json:"trip_sheet_num"`
+	VehicleNumber   string          `json:"vehicle_number"`
+	DriverName      string          `json:"driver_name"`
+	MobileNumber    string          `json:"mobile_number"`
+	LoadingPoints   []LoadUnLoadLoc `json:"loading_points"`
+	UnLoadingPoints []LoadUnLoadLoc `json:"unloading_points"`
+}
+
 type InvStatusResponse struct {
 	DraftCount      int64 `json:"draft"`
 	InvcoiceRaised  int   `json:"raised"`

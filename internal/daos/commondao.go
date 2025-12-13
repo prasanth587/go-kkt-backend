@@ -386,12 +386,12 @@ func (br *PreRequisiteObj) GetLRTripInfo() (*[]dtos.TripSheetInfo, error) {
 
 func (mp *PreRequisiteObj) GetLocationNameById(loadingPointId int64) (*dtos.LoadUnLoadLoc, error) {
 
-	locQuery := fmt.Sprintf(`SELECT city_code, city_name FROM loading_point WHERE loading_point_id = '%v' `, loadingPointId)
+	locQuery := fmt.Sprintf(`SELECT city_code, city_name, map_link, address_line, state FROM loading_point WHERE loading_point_id = '%v' `, loadingPointId)
 	mp.l.Info("GetLocationNameById whereQuery:\n ", locQuery)
 
 	row := mp.dbConnMSSQL.GetQueryer().QueryRow(locQuery)
-	var cityCode, cityName sql.NullString
-	errE := row.Scan(&cityCode, &cityName)
+	var cityCode, cityName, mapLink, addressLine, state sql.NullString
+	errE := row.Scan(&cityCode, &cityName, &mapLink, &addressLine, &state)
 	if errE != nil {
 		mp.l.Error("Error GetCount scan: ", errE)
 		return nil, errE
@@ -399,6 +399,9 @@ func (mp *PreRequisiteObj) GetLocationNameById(loadingPointId int64) (*dtos.Load
 	loadUnLoad := &dtos.LoadUnLoadLoc{}
 	loadUnLoad.CityCode = cityCode.String
 	loadUnLoad.CityName = cityName.String
+	loadUnLoad.MapLink = mapLink.String
+	loadUnLoad.AddressLine = addressLine.String
+	loadUnLoad.State = state.String
 	loadUnLoad.LoadingPointId = loadingPointId
 
 	return loadUnLoad, nil
