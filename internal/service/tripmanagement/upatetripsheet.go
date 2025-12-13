@@ -166,8 +166,10 @@ func (trp *TripSheetObj) sendPaymentSMS(oldTripSheet *dtos.TripSheet, newTripShe
 	trp.l.Info("Vendor ID: ", newTripSheet.VendorID)
 
 	// Check if payment was just made (BASE: or ADVANCE: format)
+	trp.l.Info("SMS DEBUG: Comparing paid dates - Old: '", oldPaidDate, "' New: '", newPaidDate, "'")
 	if newPaidDate == "" || newPaidDate == oldPaidDate {
-		trp.l.Info("SMS DEBUG: No payment change detected, skipping SMS")
+		trp.l.Info("SMS DEBUG: No payment change detected (old and new are same or empty), skipping SMS")
+		trp.l.Info("SMS DEBUG: oldPaidDate='", oldPaidDate, "' newPaidDate='", newPaidDate, "' areEqual=", newPaidDate == oldPaidDate)
 		return // No payment change
 	}
 
