@@ -1,3 +1,9 @@
+//go:build ignore
+// +build ignore
+
+// This file is excluded from production builds
+// To run this test: go run test_sms.go
+
 package main
 
 import (
